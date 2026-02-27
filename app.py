@@ -1,10 +1,13 @@
 import streamlit as st
+from utils.auth import check_password
 
 st.set_page_config(
     page_title="Ma Toolbox SEO",
     page_icon="🧰",
     layout="wide"
 )
+
+check_password()
 
 st.title("🧰 Ma Toolbox SEO")
 st.markdown("*Tous mes outils SEO regroupés en une seule application.*")

@@ -1,4 +1,5 @@
 import streamlit as st
+from utils.auth import check_password
 import requests
 import pandas as pd
 import time
@@ -1473,7 +1474,8 @@ def run_writing_engine(
 
 def main():
     st.set_page_config(page_title="Rédaction Contenu | Ma Toolbox SEO", page_icon="✍️", layout="wide")
-    
+    check_password()
+
     st.title("✍️ SEO Content Writer Pro V2")
     st.markdown("*Analyse concurrentielle → Structure Hn → Rédaction paragraphe par paragraphe*")
     
