@@ -1,0 +1,10 @@
+{
+  "name": "Casa Barbara",
+  "domain": "www.casabarbara.com",
+  "sitemap_urls": [
+    "https://www.casabarbara.com/page-sitemap.xml"
+  ],
+  "pages": [],
+  "last_fetched": null,
+  "cache_ttl_hours": 168
+}

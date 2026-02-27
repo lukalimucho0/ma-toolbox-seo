@@ -1,0 +1,480 @@
+{
+  "name": "Moduleo Containers",
+  "domain": "moduleo-container.com",
+  "sitemap_urls": [
+    "https://moduleo-container.com/page-sitemap.xml",
+    "https://moduleo-container.com/containers-sitemap.xml",
+    "https://moduleo-container.com/containers-amenages-sitemap.xml",
+    "https://moduleo-container.com/projets-sitemap.xml",
+    "https://moduleo-container.com/actualites-sitemap.xml"
+  ],
+  "pages": [
+    {
+      "url": "https://moduleo-container.com/",
+      "lastmod": "2025-10-31T18:10:37+00:00",
+      "title": "Accueil"
+    },
+    {
+      "url": "https://moduleo-container.com/a-propos/",
+      "lastmod": "2024-04-10T06:59:42+00:00",
+      "title": "A Propos"
+    },
+    {
+      "url": "https://moduleo-container.com/devis/",
+      "lastmod": "2024-06-25T11:04:19+00:00",
+      "title": "Devis"
+    },
+    {
+      "url": "https://moduleo-container.com/mentions-legales/",
+      "lastmod": "2024-06-25T11:13:42+00:00",
+      "title": "Mentions Legales"
+    },
+    {
+      "url": "https://moduleo-container.com/faq/",
+      "lastmod": "2025-02-17T12:12:30+00:00",
+      "title": "Faq"
+    },
+    {
+      "url": "https://moduleo-container.com/sitemap/",
+      "lastmod": "2025-04-25T13:58:54+00:00",
+      "title": "Sitemap"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/",
+      "lastmod": "2024-02-25T15:32:40+00:00",
+      "title": "Containers"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/containers-10-pieds-dry/",
+      "lastmod": "2024-02-25T14:30:26+00:00",
+      "title": "Containers 10 Pieds Dry"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-6-pieds-dry/",
+      "lastmod": "2024-02-25T14:48:19+00:00",
+      "title": "Conteneur Maritime 6 Pieds Dry"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/containers-08-pieds/",
+      "lastmod": "2024-02-25T14:48:34+00:00",
+      "title": "Containers 08 Pieds"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-20-pieds-dry-high-cube/",
+      "lastmod": "2024-02-25T14:50:04+00:00",
+      "title": "Conteneur Maritime 20 Pieds Dry High Cube"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-10-pieds-dry-high-cube/",
+      "lastmod": "2024-02-25T14:50:08+00:00",
+      "title": "Conteneur Maritime 10 Pieds Dry High Cube"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-20-pieds-dry/",
+      "lastmod": "2024-02-25T14:50:26+00:00",
+      "title": "Conteneur Maritime 20 Pieds Dry"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-40-pieds-dry/",
+      "lastmod": "2024-02-25T14:51:44+00:00",
+      "title": "Conteneur Maritime 40 Pieds Dry"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-40-pieds-dry-high-cube/",
+      "lastmod": "2024-02-25T14:52:48+00:00",
+      "title": "Conteneur Maritime 40 Pieds Dry High Cube"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-20-pieds-dry-flat-rack/",
+      "lastmod": "2024-02-25T15:18:45+00:00",
+      "title": "Conteneur Maritime 20 Pieds Dry Flat Rack"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-40-pieds-dry-double-door-high-cube/",
+      "lastmod": "2024-02-25T15:25:24+00:00",
+      "title": "Conteneur Maritime 40 Pieds Dry Double Door High Cube"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-40-pieds-dry-open-top/",
+      "lastmod": "2024-02-25T15:27:14+00:00",
+      "title": "Conteneur Maritime 40 Pieds Dry Open Top"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-refer-frigorifique-10-pieds/",
+      "lastmod": "2024-02-25T15:27:56+00:00",
+      "title": "Conteneur Refer Frigorifique 10 Pieds"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-refer-frigorifique-10-pieds-high-cube/",
+      "lastmod": "2024-02-25T15:28:23+00:00",
+      "title": "Conteneur Refer Frigorifique 10 Pieds High Cube"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-refer-frigorifique-20-pieds/",
+      "lastmod": "2024-02-25T15:28:36+00:00",
+      "title": "Conteneur Refer Frigorifique 20 Pieds"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-refer-frigorifique-20-pieds-high-cube/",
+      "lastmod": "2024-02-25T15:28:55+00:00",
+      "title": "Conteneur Refer Frigorifique 20 Pieds High Cube"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-refer-frigorifique-40-pieds-high-cube/",
+      "lastmod": "2024-02-25T15:29:08+00:00",
+      "title": "Conteneur Refer Frigorifique 40 Pieds High Cube"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-isotherme-10-pieds/",
+      "lastmod": "2024-02-25T15:29:22+00:00",
+      "title": "Conteneur Isotherme 10 Pieds"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-isotherme-20-pieds/",
+      "lastmod": "2024-02-25T15:29:49+00:00",
+      "title": "Conteneur Isotherme 20 Pieds"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-isotherme-40-pieds/",
+      "lastmod": "2024-02-25T15:30:03+00:00",
+      "title": "Conteneur Isotherme 40 Pieds"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-20-pieds-open-side/",
+      "lastmod": "2024-02-25T15:30:19+00:00",
+      "title": "Conteneur Maritime 20 Pieds Open Side"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-20-pieds-open-side-high-cube/",
+      "lastmod": "2024-02-25T15:30:33+00:00",
+      "title": "Conteneur Maritime 20 Pieds Open Side High Cube"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-20-pieds-dry-double-door/",
+      "lastmod": "2024-02-25T15:30:46+00:00",
+      "title": "Conteneur Maritime 20 Pieds Dry Double Door"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-20-pieds-dry-open-top/",
+      "lastmod": "2024-02-25T15:31:12+00:00",
+      "title": "Conteneur Maritime 20 Pieds Dry Open Top"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-40-pieds-open-side-high-cube/",
+      "lastmod": "2024-02-25T15:31:33+00:00",
+      "title": "Conteneur Maritime 40 Pieds Open Side High Cube"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-40-pieds-dry-double-door/",
+      "lastmod": "2024-02-25T15:31:46+00:00",
+      "title": "Conteneur Maritime 40 Pieds Dry Double Door"
+    },
+    {
+      "url": "https://moduleo-container.com/containers/conteneur-maritime-40-pieds-dry-flat-rack/",
+      "lastmod": "2024-02-25T15:32:40+00:00",
+      "title": "Conteneur Maritime 40 Pieds Dry Flat Rack"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/",
+      "lastmod": "2026-02-20T13:34:20+00:00",
+      "title": "Containers Amenages"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/containers-de-chantier-base-de-vie/",
+      "lastmod": "2024-01-22T08:30:53+00:00",
+      "title": "Containers De Chantier Base De Vie"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/containers-exposition-manifestation-culturelle/",
+      "lastmod": "2024-09-15T10:12:52+00:00",
+      "title": "Containers Exposition Manifestation Culturelle"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/containers-regie-son-et-lumiere/",
+      "lastmod": "2024-09-15T10:27:38+00:00",
+      "title": "Containers Regie Son Et Lumiere"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/conteneur-maritime-chambre-froide/",
+      "lastmod": "2024-09-15T10:34:19+00:00",
+      "title": "Conteneur Maritime Chambre Froide"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/conteneur-maritime-stockage-et-atelier/",
+      "lastmod": "2024-09-15T10:39:18+00:00",
+      "title": "Conteneur Maritime Stockage Et Atelier"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/conteneur-maritime-laboratoire-agro-alimentaire/",
+      "lastmod": "2024-09-15T10:40:29+00:00",
+      "title": "Conteneur Maritime Laboratoire Agro Alimentaire"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/pool-house-container/",
+      "lastmod": "2024-09-15T10:59:36+00:00",
+      "title": "Pool House Container"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/studio-conteneur-maritime/",
+      "lastmod": "2024-09-15T11:01:37+00:00",
+      "title": "Studio Conteneur Maritime"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/extension-maison-conteneur-maritime/",
+      "lastmod": "2024-09-15T11:03:02+00:00",
+      "title": "Extension Maison Conteneur Maritime"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/abris-de-jardin-conteneur-maritime/",
+      "lastmod": "2024-09-15T11:04:03+00:00",
+      "title": "Abris De Jardin Conteneur Maritime"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/conteneur-maritime-pergola-terrasse-couverte/",
+      "lastmod": "2024-09-15T11:08:25+00:00",
+      "title": "Conteneur Maritime Pergola Terrasse Couverte"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/tiny-house-conteneur-maritime/",
+      "lastmod": "2024-09-15T11:09:20+00:00",
+      "title": "Tiny House Conteneur Maritime"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/maison-conteneur-maritime/",
+      "lastmod": "2024-09-15T16:52:55+00:00",
+      "title": "Maison Conteneur Maritime"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/container-shop/",
+      "lastmod": "2025-05-10T12:53:51+00:00",
+      "title": "Container Shop"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/bars-conteneur-maritime/",
+      "lastmod": "2025-05-10T12:53:57+00:00",
+      "title": "Bars Conteneur Maritime"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/bureaux-container-pour-professionnels/",
+      "lastmod": "2025-05-10T12:54:52+00:00",
+      "title": "Bureaux Container Pour Professionnels"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/garages-containers-professionnels/",
+      "lastmod": "2025-05-21T09:52:46+00:00",
+      "title": "Garages Containers Professionnels"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/concession-container-pour-la-plage/",
+      "lastmod": "2025-07-15T11:27:44+00:00",
+      "title": "Concession Container Pour La Plage"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/restaurants-conteneur-maritime/",
+      "lastmod": "2025-07-15T14:51:47+00:00",
+      "title": "Restaurants Conteneur Maritime"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/garages-containers-particuliers/",
+      "lastmod": "2026-02-16T11:04:19+00:00",
+      "title": "Garages Containers Particuliers"
+    },
+    {
+      "url": "https://moduleo-container.com/containers-amenages/container-bureau-teletravail/",
+      "lastmod": "2026-02-20T13:34:20+00:00",
+      "title": "Container Bureau Teletravail"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/",
+      "lastmod": "2024-11-11T16:48:43+00:00",
+      "title": "Projets"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/studio-container-30m%c2%b2-terrasse/",
+      "lastmod": "2024-01-18T07:51:54+00:00",
+      "title": "Studio Container 30M%C2%B2 Terrasse"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/garage-container-45m%c2%b2/",
+      "lastmod": "2024-01-18T07:53:10+00:00",
+      "title": "Garage Container 45M%C2%B2"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/gms-beer-bar-terrasse-itinerant/",
+      "lastmod": "2024-01-18T08:06:29+00:00",
+      "title": "Gms Beer Bar Terrasse Itinerant"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/snack-10ft-le-conquet-m-gallery-hotel/",
+      "lastmod": "2024-01-18T08:07:18+00:00",
+      "title": "Snack 10Ft Le Conquet M Gallery Hotel"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/container-boulangerie-ile-de-houat/",
+      "lastmod": "2024-01-18T08:07:53+00:00",
+      "title": "Container Boulangerie Ile De Houat"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/bar-multi-containers-monaco/",
+      "lastmod": "2024-01-18T08:08:07+00:00",
+      "title": "Bar Multi Containers Monaco"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/container-poissonerie-snack-ile-de-houat/",
+      "lastmod": "2024-01-18T08:08:30+00:00",
+      "title": "Container Poissonerie Snack Ile De Houat"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/garage-container-3-x-20ft-45m%c2%b2-porte-500cm/",
+      "lastmod": "2024-01-18T08:10:48+00:00",
+      "title": "Garage Container 3 X 20Ft 45M%C2%B2 Porte 500Cm"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/container-evenementiel-ordre-des-architectes-de-belgique/",
+      "lastmod": "2024-01-19T18:27:33+00:00",
+      "title": "Container Evenementiel Ordre Des Architectes De Belgique"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/container-pool-house-20-pieds/",
+      "lastmod": "2024-01-20T09:51:30+00:00",
+      "title": "Container Pool House 20 Pieds"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/abri-de-jardin-container/",
+      "lastmod": "2024-01-20T10:23:01+00:00",
+      "title": "Abri De Jardin Container"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/container-pergola-terrasse-couverte/",
+      "lastmod": "2024-01-20T10:42:01+00:00",
+      "title": "Container Pergola Terrasse Couverte"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/container-pergola-terrasse-couverte-2/",
+      "lastmod": "2024-01-22T08:16:31+00:00",
+      "title": "Container Pergola Terrasse Couverte 2"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/containers-bar-et-foodtruck-la-friche-gourmande/",
+      "lastmod": "2024-01-28T20:33:23+00:00",
+      "title": "Containers Bar Et Foodtruck La Friche Gourmande"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/container-bureau-espace-teletravail/",
+      "lastmod": "2024-01-28T23:00:28+00:00",
+      "title": "Container Bureau Espace Teletravail"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/studio-45m%c2%b2-espace-professionnel/",
+      "lastmod": "2024-05-12T19:56:15+00:00",
+      "title": "Studio 45M%C2%B2 Espace Professionnel"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/bar-de-plage-container-aviateur-calais/",
+      "lastmod": "2024-10-12T22:47:17+00:00",
+      "title": "Bar De Plage Container Aviateur Calais"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/3-brasseurs-roche-sur-yon-container-bar-coktails/",
+      "lastmod": "2024-11-11T11:29:45+00:00",
+      "title": "3 Brasseurs Roche Sur Yon Container Bar Coktails"
+    },
+    {
+      "url": "https://moduleo-container.com/projets/container-sandwicherie-boisson-port-lauragais/",
+      "lastmod": "2024-11-11T16:48:43+00:00",
+      "title": "Container Sandwicherie Boisson Port Lauragais"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/",
+      "lastmod": "2025-10-02T15:36:19+00:00",
+      "title": "Actualites"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/investir-dans-un-bar-container/",
+      "lastmod": "2024-09-06T20:26:54+00:00",
+      "title": "Investir Dans Un Bar Container"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/resoudre-probleme-espace-avec-conteneur-maritime/",
+      "lastmod": "2024-09-06T20:39:09+00:00",
+      "title": "Resoudre Probleme Espace Avec Conteneur Maritime"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/9-idees-design-pour-conteneurs-amenages-en-ateliers/",
+      "lastmod": "2024-09-06T20:39:21+00:00",
+      "title": "9 Idees Design Pour Conteneurs Amenages En Ateliers"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/comment-amenager-un-conteneur-maritime-en-salle-de-sport/",
+      "lastmod": "2024-09-06T20:39:38+00:00",
+      "title": "Comment Amenager Un Conteneur Maritime En Salle De Sport"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/construction-modulaire-avec-conteneurs-maritimes/",
+      "lastmod": "2024-09-06T20:39:46+00:00",
+      "title": "Construction Modulaire Avec Conteneurs Maritimes"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/utilisation-conteneur-maritime-pop-up-store/",
+      "lastmod": "2024-09-06T20:39:54+00:00",
+      "title": "Utilisation Conteneur Maritime Pop Up Store"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/quelles-fondations-pour-accueillir-conteneur-maritime/",
+      "lastmod": "2024-09-06T20:40:00+00:00",
+      "title": "Quelles Fondations Pour Accueillir Conteneur Maritime"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/conteneur-maritime-refer-explications/",
+      "lastmod": "2024-09-06T20:40:12+00:00",
+      "title": "Conteneur Maritime Refer Explications"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/avantages-et-explications-garage-conteneur-maritime/",
+      "lastmod": "2024-09-15T09:15:02+00:00",
+      "title": "Avantages Et Explications Garage Conteneur Maritime"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/quest-ce-quun-container-premier-voyage/",
+      "lastmod": "2024-09-15T09:47:42+00:00",
+      "title": "Quest Ce Quun Container Premier Voyage"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/dark-kitchen-container-tout-ce-que-vous-devez-savoir/",
+      "lastmod": "2024-10-13T14:21:36+00:00",
+      "title": "Dark Kitchen Container Tout Ce Que Vous Devez Savoir"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/bar-de-plage-container-tout-savoir/",
+      "lastmod": "2024-10-13T14:21:43+00:00",
+      "title": "Bar De Plage Container Tout Savoir"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/8-raison-pour-utiliser-un-conteneur-maritime-pour-le-retail/",
+      "lastmod": "2024-11-03T21:40:15+00:00",
+      "title": "8 Raison Pour Utiliser Un Conteneur Maritime Pour Le Retail"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/duree-de-vie-container/",
+      "lastmod": "2025-09-24T06:51:15+00:00",
+      "title": "Duree De Vie Container"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/isoler-un-container/",
+      "lastmod": "2025-09-30T09:56:01+00:00",
+      "title": "Isoler Un Container"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/permis-de-construire-container/",
+      "lastmod": "2025-10-01T16:09:02+00:00",
+      "title": "Permis De Construire Container"
+    },
+    {
+      "url": "https://moduleo-container.com/actualites/agrandir-sa-maison-avec-un-container/",
+      "lastmod": "2025-10-02T15:36:19+00:00",
+      "title": "Agrandir Sa Maison Avec Un Container"
+    }
+  ],
+  "last_fetched": "2026-02-26T15:13:12.742684",
+  "cache_ttl_hours": 168
+}

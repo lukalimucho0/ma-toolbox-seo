@@ -1,0 +1,1124 @@
+{
+  "name": "Highstay",
+  "domain": "highstay.com",
+  "sitemap_urls": [
+    "https://highstay.com/sitemap_general.xml/",
+    "https://highstay.com/sitemap_apartments.xml/",
+    "https://highstay.com/sitemap_districts.xml/",
+    "https://highstay.com/sitemap_blogs.xml/"
+  ],
+  "pages": [
+    {
+      "url": "https://highstay.com/fr/",
+      "lastmod": "2026-02-26T11:22:06.503Z",
+      "title": "Fr"
+    },
+    {
+      "url": "https://highstay.com/",
+      "lastmod": "2026-02-26T11:22:06.503Z",
+      "title": "Accueil"
+    },
+    {
+      "url": "https://highstay.com/fr/cms/politique-cookies/",
+      "lastmod": "2026-02-26T11:22:06.504Z",
+      "title": "Politique Cookies"
+    },
+    {
+      "url": "https://highstay.com/cms/cookies-policy/",
+      "lastmod": "2026-02-26T11:22:06.504Z",
+      "title": "Cookies Policy"
+    },
+    {
+      "url": "https://highstay.com/about-us/",
+      "lastmod": null,
+      "title": "About Us"
+    },
+    {
+      "url": "https://highstay.com/account/",
+      "lastmod": null,
+      "title": "Account"
+    },
+    {
+      "url": "https://highstay.com/boetie/",
+      "lastmod": null,
+      "title": "Boetie"
+    },
+    {
+      "url": "https://highstay.com/contact-us/",
+      "lastmod": null,
+      "title": "Contact Us"
+    },
+    {
+      "url": "https://highstay.com/es/",
+      "lastmod": null,
+      "title": "Es"
+    },
+    {
+      "url": "https://highstay.com/map/",
+      "lastmod": null,
+      "title": "Map"
+    },
+    {
+      "url": "https://highstay.com/messages/",
+      "lastmod": null,
+      "title": "Messages"
+    },
+    {
+      "url": "https://highstay.com/offers/",
+      "lastmod": null,
+      "title": "Offers"
+    },
+    {
+      "url": "https://highstay.com/pyramides/",
+      "lastmod": null,
+      "title": "Pyramides"
+    },
+    {
+      "url": "https://highstay.com/signature/",
+      "lastmod": null,
+      "title": "Signature"
+    },
+    {
+      "url": "https://highstay.com/test/",
+      "lastmod": null,
+      "title": "Test"
+    },
+    {
+      "url": "https://highstay.com/tunnel/",
+      "lastmod": null,
+      "title": "Tunnel"
+    },
+    {
+      "url": "https://highstay.com/vintimille/",
+      "lastmod": null,
+      "title": "Vintimille"
+    },
+    {
+      "url": "https://highstay.com/account/favorites/",
+      "lastmod": null,
+      "title": "Favorites"
+    },
+    {
+      "url": "https://highstay.com/account/fidelity/",
+      "lastmod": null,
+      "title": "Fidelity"
+    },
+    {
+      "url": "https://highstay.com/account/profile/",
+      "lastmod": null,
+      "title": "Profile"
+    },
+    {
+      "url": "https://highstay.com/account/receipt/",
+      "lastmod": null,
+      "title": "Receipt"
+    },
+    {
+      "url": "https://highstay.com/account/services/",
+      "lastmod": null,
+      "title": "Services"
+    },
+    {
+      "url": "https://highstay.com/account/sponsorship/",
+      "lastmod": null,
+      "title": "Sponsorship"
+    },
+    {
+      "url": "https://highstay.com/es/about/",
+      "lastmod": null,
+      "title": "About"
+    },
+    {
+      "url": "https://highstay.com/es/account/",
+      "lastmod": null,
+      "title": "Account"
+    },
+    {
+      "url": "https://highstay.com/es/apartments/",
+      "lastmod": null,
+      "title": "Apartments"
+    },
+    {
+      "url": "https://highstay.com/es/boetie/",
+      "lastmod": null,
+      "title": "Boetie"
+    },
+    {
+      "url": "https://highstay.com/es/contact/",
+      "lastmod": null,
+      "title": "Contact"
+    },
+    {
+      "url": "https://highstay.com/es/district/",
+      "lastmod": null,
+      "title": "District"
+    },
+    {
+      "url": "https://highstay.com/es/map/",
+      "lastmod": null,
+      "title": "Map"
+    },
+    {
+      "url": "https://highstay.com/es/offers/",
+      "lastmod": null,
+      "title": "Offers"
+    },
+    {
+      "url": "https://highstay.com/es/pyramides/",
+      "lastmod": null,
+      "title": "Pyramides"
+    },
+    {
+      "url": "https://highstay.com/es/signature/",
+      "lastmod": null,
+      "title": "Signature"
+    },
+    {
+      "url": "https://highstay.com/es/sitemap/",
+      "lastmod": null,
+      "title": "Sitemap"
+    },
+    {
+      "url": "https://highstay.com/es/testPage/",
+      "lastmod": null,
+      "title": "Testpage"
+    },
+    {
+      "url": "https://highstay.com/es/tunnel/",
+      "lastmod": null,
+      "title": "Tunnel"
+    },
+    {
+      "url": "https://highstay.com/es/vintimille/",
+      "lastmod": null,
+      "title": "Vintimille"
+    },
+    {
+      "url": "https://highstay.com/fr/a-propos/",
+      "lastmod": null,
+      "title": "A Propos"
+    },
+    {
+      "url": "https://highstay.com/fr/boetie/",
+      "lastmod": null,
+      "title": "Boetie"
+    },
+    {
+      "url": "https://highstay.com/fr/map/",
+      "lastmod": null,
+      "title": "Map"
+    },
+    {
+      "url": "https://highstay.com/fr/messages/",
+      "lastmod": null,
+      "title": "Messages"
+    },
+    {
+      "url": "https://highstay.com/fr/mon-compte/",
+      "lastmod": null,
+      "title": "Mon Compte"
+    },
+    {
+      "url": "https://highstay.com/fr/nous-contacter/",
+      "lastmod": null,
+      "title": "Nous Contacter"
+    },
+    {
+      "url": "https://highstay.com/fr/offres/",
+      "lastmod": null,
+      "title": "Offres"
+    },
+    {
+      "url": "https://highstay.com/fr/pyramides/",
+      "lastmod": null,
+      "title": "Pyramides"
+    },
+    {
+      "url": "https://highstay.com/fr/signature/",
+      "lastmod": null,
+      "title": "Signature"
+    },
+    {
+      "url": "https://highstay.com/fr/test/",
+      "lastmod": null,
+      "title": "Test"
+    },
+    {
+      "url": "https://highstay.com/fr/tunnel/",
+      "lastmod": null,
+      "title": "Tunnel"
+    },
+    {
+      "url": "https://highstay.com/fr/vintimille/",
+      "lastmod": null,
+      "title": "Vintimille"
+    },
+    {
+      "url": "https://highstay.com/tunnel/confirmation/",
+      "lastmod": null,
+      "title": "Confirmation"
+    },
+    {
+      "url": "https://highstay.com/es/account/favorite/",
+      "lastmod": null,
+      "title": "Favorite"
+    },
+    {
+      "url": "https://highstay.com/es/account/fidelity/",
+      "lastmod": null,
+      "title": "Fidelity"
+    },
+    {
+      "url": "https://highstay.com/es/account/messages/",
+      "lastmod": null,
+      "title": "Messages"
+    },
+    {
+      "url": "https://highstay.com/es/account/profile/",
+      "lastmod": null,
+      "title": "Profile"
+    },
+    {
+      "url": "https://highstay.com/es/account/receipts/",
+      "lastmod": null,
+      "title": "Receipts"
+    },
+    {
+      "url": "https://highstay.com/es/account/services/",
+      "lastmod": null,
+      "title": "Services"
+    },
+    {
+      "url": "https://highstay.com/es/account/sponsorship/",
+      "lastmod": null,
+      "title": "Sponsorship"
+    },
+    {
+      "url": "https://highstay.com/es/tunnel/confirmation/",
+      "lastmod": null,
+      "title": "Confirmation"
+    },
+    {
+      "url": "https://highstay.com/fr/mon-compte/favoris/",
+      "lastmod": null,
+      "title": "Favoris"
+    },
+    {
+      "url": "https://highstay.com/fr/mon-compte/fidelite/",
+      "lastmod": null,
+      "title": "Fidelite"
+    },
+    {
+      "url": "https://highstay.com/fr/mon-compte/parrainage/",
+      "lastmod": null,
+      "title": "Parrainage"
+    },
+    {
+      "url": "https://highstay.com/fr/mon-compte/profil/",
+      "lastmod": null,
+      "title": "Profil"
+    },
+    {
+      "url": "https://highstay.com/fr/mon-compte/recus/",
+      "lastmod": null,
+      "title": "Recus"
+    },
+    {
+      "url": "https://highstay.com/fr/mon-compte/services/",
+      "lastmod": null,
+      "title": "Services"
+    },
+    {
+      "url": "https://highstay.com/fr/tunnel/confirmation/",
+      "lastmod": null,
+      "title": "Confirmation"
+    },
+    {
+      "url": "https://highstay.com/apartments/louvre-iii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Louvre Iii"
+    },
+    {
+      "url": "https://highstay.com/apartments/iena-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Iena I"
+    },
+    {
+      "url": "https://highstay.com/apartments/rivoli-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Rivoli I"
+    },
+    {
+      "url": "https://highstay.com/apartments/saint-martin-iii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Saint Martin Iii"
+    },
+    {
+      "url": "https://highstay.com/apartments/saint-honore-iv/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Saint Honore Iv"
+    },
+    {
+      "url": "https://highstay.com/apartments/saint-honore-vi/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Saint Honore Vi"
+    },
+    {
+      "url": "https://highstay.com/apartments/saint-martin-iv/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Saint Martin Iv"
+    },
+    {
+      "url": "https://highstay.com/apartments/rue-saint-honore-v/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Rue Saint Honore V"
+    },
+    {
+      "url": "https://highstay.com/apartments/invalides-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Invalides I"
+    },
+    {
+      "url": "https://highstay.com/apartments/galilee/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Galilee"
+    },
+    {
+      "url": "https://highstay.com/apartments/berri-ii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Berri Ii"
+    },
+    {
+      "url": "https://highstay.com/apartments/banque-ii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Banque Ii"
+    },
+    {
+      "url": "https://highstay.com/apartments/reaumur-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Reaumur I"
+    },
+    {
+      "url": "https://highstay.com/apartments/saint-martin-ii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Saint Martin Ii"
+    },
+    {
+      "url": "https://highstay.com/apartments/louvre-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Louvre I"
+    },
+    {
+      "url": "https://highstay.com/apartments/Poincar%C3%A9/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Poincar%C3%A9"
+    },
+    {
+      "url": "https://highstay.com/apartments/saint-martin-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Saint Martin I"
+    },
+    {
+      "url": "https://highstay.com/apartments/chapon-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Chapon I"
+    },
+    {
+      "url": "https://highstay.com/apartments/banque-iii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Banque Iii"
+    },
+    {
+      "url": "https://highstay.com/apartments/victoria-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Victoria I"
+    },
+    {
+      "url": "https://highstay.com/apartments/saint-honore-iii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Saint Honore Iii"
+    },
+    {
+      "url": "https://highstay.com/apartments/victoire-ii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Victoire Ii"
+    },
+    {
+      "url": "https://highstay.com/apartments/louvre-ii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Louvre Ii"
+    },
+    {
+      "url": "https://highstay.com/apartments/rivoli-ii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Rivoli Ii"
+    },
+    {
+      "url": "https://highstay.com/apartments/reaumur-iv/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Reaumur Iv"
+    },
+    {
+      "url": "https://highstay.com/apartments/eiffel-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Eiffel I"
+    },
+    {
+      "url": "https://highstay.com/apartments/berri-iii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Berri Iii"
+    },
+    {
+      "url": "https://highstay.com/apartments/reaumur-vii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Reaumur Vii"
+    },
+    {
+      "url": "https://highstay.com/apartments/victoria-ii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Victoria Ii"
+    },
+    {
+      "url": "https://highstay.com/apartments/victoire-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Victoire I"
+    },
+    {
+      "url": "https://highstay.com/apartments/banque-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Banque I"
+    },
+    {
+      "url": "https://highstay.com/apartments/rue-saint-honore-ii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Rue Saint Honore Ii"
+    },
+    {
+      "url": "https://highstay.com/apartments/reaumur-vi/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Reaumur Vi"
+    },
+    {
+      "url": "https://highstay.com/apartments/reaumur-ii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Reaumur Ii"
+    },
+    {
+      "url": "https://highstay.com/apartments/reaumur-v/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Reaumur V"
+    },
+    {
+      "url": "https://highstay.com/apartments/berri-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Berri I"
+    },
+    {
+      "url": "https://highstay.com/apartments/reaumur-iii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Reaumur Iii"
+    },
+    {
+      "url": "https://highstay.com/apartments/saint-honore-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Saint Honore I"
+    },
+    {
+      "url": "https://highstay.com/apartments/alger-appartement/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Alger Appartement"
+    },
+    {
+      "url": "https://highstay.com/apartments/chapon-ii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Chapon Ii"
+    },
+    {
+      "url": "https://highstay.com/apartments/franklin-roosevelt-i/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Franklin Roosevelt I"
+    },
+    {
+      "url": "https://highstay.com/apartments/franklin-roosevelt-ii/",
+      "lastmod": "2026-02-26T11:29:21.086Z",
+      "title": "Franklin Roosevelt Ii"
+    },
+    {
+      "url": "https://highstay.com/district/ibiza/",
+      "lastmod": "2026-02-26T11:23:52.214Z",
+      "title": "Ibiza"
+    },
+    {
+      "url": "https://highstay.com/district/palais-royal/",
+      "lastmod": "2026-02-26T11:23:52.214Z",
+      "title": "Palais Royal"
+    },
+    {
+      "url": "https://highstay.com/district/tour-eiffel/",
+      "lastmod": "2026-02-26T11:23:52.214Z",
+      "title": "Tour Eiffel"
+    },
+    {
+      "url": "https://highstay.com/district/rue-saint-honore/",
+      "lastmod": "2026-02-26T11:23:52.214Z",
+      "title": "Rue Saint Honore"
+    },
+    {
+      "url": "https://highstay.com/district/montmartre/",
+      "lastmod": "2026-02-26T11:23:52.214Z",
+      "title": "Montmartre"
+    },
+    {
+      "url": "https://highstay.com/district/saint-germain-des-pres/",
+      "lastmod": "2026-02-26T11:23:52.214Z",
+      "title": "Saint Germain Des Pres"
+    },
+    {
+      "url": "https://highstay.com/district/louvre-rivoli/",
+      "lastmod": "2026-02-26T11:23:52.214Z",
+      "title": "Louvre Rivoli"
+    },
+    {
+      "url": "https://highstay.com/district/champs-elysees/",
+      "lastmod": "2026-02-26T11:23:52.214Z",
+      "title": "Champs Elysees"
+    },
+    {
+      "url": "https://highstay.com/district/le-marais/",
+      "lastmod": "2026-02-26T11:23:52.214Z",
+      "title": "Le Marais"
+    },
+    {
+      "url": "https://highstay.com/district/invalides/",
+      "lastmod": "2026-02-26T11:23:52.214Z",
+      "title": "Invalides"
+    },
+    {
+      "url": "https://highstay.com/fr/b/le-shopping-de-luxe-a-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Le Shopping De Luxe A Paris"
+    },
+    {
+      "url": "https://highstay.com/b/luxury-shopping-in-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Luxury Shopping In Paris"
+    },
+    {
+      "url": "https://highstay.com/fr/b/quels-sont-les-meilleurs-brunchs-a-faire-autour-du-louvre/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Quels Sont Les Meilleurs Brunchs A Faire Autour Du Louvre"
+    },
+    {
+      "url": "https://highstay.com/b/where-to-find-the-best-brunches-around-the-louvre/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Where To Find The Best Brunches Around The Louvre"
+    },
+    {
+      "url": "https://highstay.com/fr/b/trouver-un-appartement-de-luxe-pour-des-vacances-a-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Trouver Un Appartement De Luxe Pour Des Vacances A Paris"
+    },
+    {
+      "url": "https://highstay.com/b/finding-a-luxury-holiday-apartment-in-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Finding A Luxury Holiday Apartment In Paris"
+    },
+    {
+      "url": "https://highstay.com/fr/b/comment-creer-la-meilleure-escapade-romantique-pour-votre-partenaire/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Comment Creer La Meilleure Escapade Romantique Pour Votre Partenaire"
+    },
+    {
+      "url": "https://highstay.com/b/how-to-plan-the-perfect-romantic-getaway-for-your-partner/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "How To Plan The Perfect Romantic Getaway For Your Partner"
+    },
+    {
+      "url": "https://highstay.com/fr/b/quelles-sont-les-activites-touristiques-et-culturelles-a-faire-autour-de-saint-honore/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Quelles Sont Les Activites Touristiques Et Culturelles A Faire Autour De Saint Honore"
+    },
+    {
+      "url": "https://highstay.com/b/what-are-the-tourist-and-cultural-activities-to-do-around-rue-saint-honore/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "What Are The Tourist And Cultural Activities To Do Around Rue Saint Honore"
+    },
+    {
+      "url": "https://highstay.com/fr/b/a-summer-in-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "A Summer In Paris"
+    },
+    {
+      "url": "https://highstay.com/fr/b/sept-bars-a-vin-a-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Sept Bars A Vin A Paris"
+    },
+    {
+      "url": "https://highstay.com/b/seven-wine-bars-in-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Seven Wine Bars In Paris"
+    },
+    {
+      "url": "https://highstay.com/fr/b/quelles-sont-les-5-choses-a-faire-rue-saint-honore/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Quelles Sont Les 5 Choses A Faire Rue Saint Honore"
+    },
+    {
+      "url": "https://highstay.com/b/what-are-the-5-things-to-do-on-rue-saint-honore/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "What Are The 5 Things To Do On Rue Saint Honore"
+    },
+    {
+      "url": "https://highstay.com/fr/b/pourquoi-la-rue-saint-honore-est-elle-devenue-l-une-des-rues-les-plus-branchees-de-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Pourquoi La Rue Saint Honore Est Elle Devenue L Une Des Rues Les Plus Branchees De Paris"
+    },
+    {
+      "url": "https://highstay.com/b/why-did-saint-honore-become-one-of-the-trendiest-streets-in-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Why Did Saint Honore Become One Of The Trendiest Streets In Paris"
+    },
+    {
+      "url": "https://highstay.com/fr/b/les-champs-elysees-plus-belle-et-celebre-avenue-du-monde/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Les Champs Elysees Plus Belle Et Celebre Avenue Du Monde"
+    },
+    {
+      "url": "https://highstay.com/b/champs-elysees-the-most-beautiful-and-famous-avenue-in-the-world/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Champs Elysees The Most Beautiful And Famous Avenue In The World"
+    },
+    {
+      "url": "https://highstay.com/fr/b/paris-fashion-week-2024-printemps-ete/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Paris Fashion Week 2024 Printemps Ete"
+    },
+    {
+      "url": "https://highstay.com/b/paris-fashion-week-2024-spring-summer/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Paris Fashion Week 2024 Spring Summer"
+    },
+    {
+      "url": "https://highstay.com/fr/b/noel-a-paris-avec-des-enfants/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Noel A Paris Avec Des Enfants"
+    },
+    {
+      "url": "https://highstay.com/b/paris-at-christmas-with-kids/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Paris At Christmas With Kids"
+    },
+    {
+      "url": "https://highstay.com/fr/b/la-cuisine-ouverte-dans-un-appartement-luxueux/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "La Cuisine Ouverte Dans Un Appartement Luxueux"
+    },
+    {
+      "url": "https://highstay.com/b/the-open-kitchen-in-a-luxury-apartment/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "The Open Kitchen In A Luxury Apartment"
+    },
+    {
+      "url": "https://highstay.com/fr/b/le-meilleur-quartier-ou-sejourner-a-paris-en-famille/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Le Meilleur Quartier Ou Sejourner A Paris En Famille"
+    },
+    {
+      "url": "https://highstay.com/b/the-best-area-to-stay-in-paris-for-families/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "The Best Area To Stay In Paris For Families"
+    },
+    {
+      "url": "https://highstay.com/b/staying-in-a-luxury-apartment-in-the-heart-of-the-marais/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Staying In A Luxury Apartment In The Heart Of The Marais"
+    },
+    {
+      "url": "https://highstay.com/fr/b/sejourner-dans-un-appartement-de-luxe-au-coeur-du-marais/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Sejourner Dans Un Appartement De Luxe Au Coeur Du Marais"
+    },
+    {
+      "url": "https://highstay.com/fr/b/louez-un-appartement-de-vacances-de-luxe-pour-la-fashion-week-de-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Louez Un Appartement De Vacances De Luxe Pour La Fashion Week De Paris"
+    },
+    {
+      "url": "https://highstay.com/b/rent-a-luxury-vacation-apartment-for-paris-fashion-week/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Rent A Luxury Vacation Apartment For Paris Fashion Week"
+    },
+    {
+      "url": "https://highstay.com/fr/b/art-in-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Art In Paris"
+    },
+    {
+      "url": "https://highstay.com/fr/b/que-visiter-dans-le-marais/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Que Visiter Dans Le Marais"
+    },
+    {
+      "url": "https://highstay.com/b/what-to-visit-in-the-marais/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "What To Visit In The Marais"
+    },
+    {
+      "url": "https://highstay.com/fr/b/10-adresses-incontournables-autour-des-champs-elysees/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "10 Adresses Incontournables Autour Des Champs Elysees"
+    },
+    {
+      "url": "https://highstay.com/b/10-must-visit-addresses-around-the-champs-elysees/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "10 Must Visit Addresses Around The Champs Elysees"
+    },
+    {
+      "url": "https://highstay.com/fr/b/quels-sont-les-restaurants-tendance-du-marais/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Quels Sont Les Restaurants Tendance Du Marais"
+    },
+    {
+      "url": "https://highstay.com/b/what-are-the-trendiest-restaurants-in-the-marais/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "What Are The Trendiest Restaurants In The Marais"
+    },
+    {
+      "url": "https://highstay.com/fr/b/le-marais-un-excellent-choix-pour-un-sejour-a-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Le Marais Un Excellent Choix Pour Un Sejour A Paris"
+    },
+    {
+      "url": "https://highstay.com/b/the-marais-an-excellent-choice-for-a-stay-in-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "The Marais An Excellent Choice For A Stay In Paris"
+    },
+    {
+      "url": "https://highstay.com/fr/b/ou-sejourner-pour-les-jeux-de-paris-en-2024/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Ou Sejourner Pour Les Jeux De Paris En 2024"
+    },
+    {
+      "url": "https://highstay.com/b/where-to-stay-for-the-games-this-summer/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Where To Stay For The Games This Summer"
+    },
+    {
+      "url": "https://highstay.com/fr/b/paris-une-experience-gastronomique-les-meilleurs-restaurants/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Paris Une Experience Gastronomique Les Meilleurs Restaurants"
+    },
+    {
+      "url": "https://highstay.com/b/paris-a-culinary-experience-the-best-restaurants/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Paris A Culinary Experience The Best Restaurants"
+    },
+    {
+      "url": "https://highstay.com/fr/b/les-activites-romantiques-a-faire-a-paris-en-amoureux/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Les Activites Romantiques A Faire A Paris En Amoureux"
+    },
+    {
+      "url": "https://highstay.com/b/romantic-things-to-do-in-paris-for-lovers/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Romantic Things To Do In Paris For Lovers"
+    },
+    {
+      "url": "https://highstay.com/fr/b/decouvrez-les-meilleurs-restaurants-etoiles-de-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Decouvrez Les Meilleurs Restaurants Etoiles De Paris"
+    },
+    {
+      "url": "https://highstay.com/b/discover-the-best-michelin-starred-restaurants-in-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Discover The Best Michelin Starred Restaurants In Paris"
+    },
+    {
+      "url": "https://highstay.com/fr/b/ou-sejourner-a-paris-avec-des-enfants/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Ou Sejourner A Paris Avec Des Enfants"
+    },
+    {
+      "url": "https://highstay.com/b/where-to-stay-in-paris-with-kids/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Where To Stay In Paris With Kids"
+    },
+    {
+      "url": "https://highstay.com/fr/b/combien-de-jours-a-ibiza/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Combien De Jours A Ibiza"
+    },
+    {
+      "url": "https://highstay.com/b/how-many-days-in-ibiza/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "How Many Days In Ibiza"
+    },
+    {
+      "url": "https://highstay.com/fr/b/hebergement-pour-la-coupe-du-monde-de-rugby-2023/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Hebergement Pour La Coupe Du Monde De Rugby 2023"
+    },
+    {
+      "url": "https://highstay.com/b/rugby-world-cup-2023-accommodation/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Rugby World Cup 2023 Accommodation"
+    },
+    {
+      "url": "https://highstay.com/fr/b/saint-tropez-une-destination-ideale-toute-l-annee/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Saint Tropez Une Destination Ideale Toute L Annee"
+    },
+    {
+      "url": "https://highstay.com/b/saint-tropez-an-ideal-destination-all-year-round/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Saint Tropez An Ideal Destination All Year Round"
+    },
+    {
+      "url": "https://highstay.com/fr/b/les-meilleures-adresses-pour-un-sejour-a-ibiza/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Les Meilleures Adresses Pour Un Sejour A Ibiza"
+    },
+    {
+      "url": "https://highstay.com/b/the-best-places-for-a-stay-in-ibiza/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "The Best Places For A Stay In Ibiza"
+    },
+    {
+      "url": "https://highstay.com/fr/b/quelles-sont-les-expositions-et-evenements-artistiques-a-paris-pour-le-debut-de-la-saison/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Quelles Sont Les Expositions Et Evenements Artistiques A Paris Pour Le Debut De La Saison"
+    },
+    {
+      "url": "https://highstay.com/b/what-are-the-paris-exhibitions-and-artistic-events-for-the-start-of-the-season/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "What Are The Paris Exhibitions And Artistic Events For The Start Of The Season"
+    },
+    {
+      "url": "https://highstay.com/fr/b/la-particularite-du-marais-a-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "La Particularite Du Marais A Paris"
+    },
+    {
+      "url": "https://highstay.com/b/the-defining-features-of-the-marais-in-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "The Defining Features Of The Marais In Paris"
+    },
+    {
+      "url": "https://highstay.com/fr/b/ou-sejourner-a-paris-pour-noel/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Ou Sejourner A Paris Pour Noel"
+    },
+    {
+      "url": "https://highstay.com/b/where-to-stay-in-paris-for-christmas/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Where To Stay In Paris For Christmas"
+    },
+    {
+      "url": "https://highstay.com/fr/b/salle-de-bain-de-luxe-avec-douche-a-l-italienne/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Salle De Bain De Luxe Avec Douche A L Italienne"
+    },
+    {
+      "url": "https://highstay.com/b/luxury-bathroom-with-walk-in-shower/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Luxury Bathroom With Walk In Shower"
+    },
+    {
+      "url": "https://highstay.com/fr/b/ou-prendre-un-verre-a-cote-du-louvre/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Ou Prendre Un Verre A Cote Du Louvre"
+    },
+    {
+      "url": "https://highstay.com/b/where-to-have-a-drink-next-to-the-louvre/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Where To Have A Drink Next To The Louvre"
+    },
+    {
+      "url": "https://highstay.com/fr/b/un-ete-a-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Un Ete A Paris"
+    },
+    {
+      "url": "https://highstay.com/fr/b/tout-ce-que-vous-devez-savoir-sur-les-jeux-de-2024/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Tout Ce Que Vous Devez Savoir Sur Les Jeux De 2024"
+    },
+    {
+      "url": "https://highstay.com/b/everything-you-need-to-know-about-paris-games-in-2024/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Everything You Need To Know About Paris Games In 2024"
+    },
+    {
+      "url": "https://highstay.com/fr/b/ou-trouver-une-location-de-courte-duree-le-quartier-du-louvre/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Ou Trouver Une Location De Courte Duree Le Quartier Du Louvre"
+    },
+    {
+      "url": "https://highstay.com/b/where-to-find-a-short-stay-rental-louvre-district/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Where To Find A Short Stay Rental Louvre District"
+    },
+    {
+      "url": "https://highstay.com/fr/b/ou-se-trouve-le-meilleur-quartier-pour-sejourner-a-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Ou Se Trouve Le Meilleur Quartier Pour Sejourner A Paris"
+    },
+    {
+      "url": "https://highstay.com/b/where-is-the-best-area-to-stay-in-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Where Is The Best Area To Stay In Paris"
+    },
+    {
+      "url": "https://highstay.com/b/what-can-you-buy-on-the-champs-elysees/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "What Can You Buy On The Champs Elysees"
+    },
+    {
+      "url": "https://highstay.com/fr/b/top-5-des-choses-a-faire-autour-des-champs-elysees/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Top 5 Des Choses A Faire Autour Des Champs Elysees"
+    },
+    {
+      "url": "https://highstay.com/b/top-5-things-to-do-around-the-champs-elysees/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Top 5 Things To Do Around The Champs Elysees"
+    },
+    {
+      "url": "https://highstay.com/fr/b/quelles-sont-les-meilleures-expositions-au-louvre-en-2023/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Quelles Sont Les Meilleures Expositions Au Louvre En 2023"
+    },
+    {
+      "url": "https://highstay.com/b/what-are-the-best-exhibitions-at-the-louvre-in-2023/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "What Are The Best Exhibitions At The Louvre In 2023"
+    },
+    {
+      "url": "https://highstay.com/fr/b/quels-sont-les-meilleurs-restaurants-a-faire-rue-saint-honore/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Quels Sont Les Meilleurs Restaurants A Faire Rue Saint Honore"
+    },
+    {
+      "url": "https://highstay.com/b/what-are-the-best-restaurants-to-try-on-rue-saint-honore/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "What Are The Best Restaurants To Try On Rue Saint Honore"
+    },
+    {
+      "url": "https://highstay.com/fr/b/vivez-des-experiences-uniques-a-paris-lors-de-votre-sejour/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Vivez Des Experiences Uniques A Paris Lors De Votre Sejour"
+    },
+    {
+      "url": "https://highstay.com/b/enjoy-unique-experiences-in-paris-during-your-stay/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Enjoy Unique Experiences In Paris During Your Stay"
+    },
+    {
+      "url": "https://highstay.com/fr/b/sejourner-dans-un-appartement-highstay/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Sejourner Dans Un Appartement Highstay"
+    },
+    {
+      "url": "https://highstay.com/b/staying-in-a-highstay-apartment/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Staying In A Highstay Apartment"
+    },
+    {
+      "url": "https://highstay.com/fr/b/paris-fashion-week-2025-dates-cles-calendrier-and-conseils/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Paris Fashion Week 2025 Dates Cles Calendrier And Conseils"
+    },
+    {
+      "url": "https://highstay.com/b/paris-fashion-week-2025-key-dates-calendar-and-tips/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Paris Fashion Week 2025 Key Dates Calendar And Tips"
+    },
+    {
+      "url": "https://highstay.com/fr/b/les-rues-marchandes-a-ne-pas-rater-dans-le-marais/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Les Rues Marchandes A Ne Pas Rater Dans Le Marais"
+    },
+    {
+      "url": "https://highstay.com/b/the-shopping-streets-not-to-miss-in-the-marais/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "The Shopping Streets Not To Miss In The Marais"
+    },
+    {
+      "url": "https://highstay.com/fr/b/ou-trouver-un-appartement-meuble-a-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Ou Trouver Un Appartement Meuble A Paris"
+    },
+    {
+      "url": "https://highstay.com/b/where-to-find-a-furnished-apartment-in-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Where To Find A Furnished Apartment In Paris"
+    },
+    {
+      "url": "https://highstay.com/fr/b/l-art-a-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "L Art A Paris"
+    },
+    {
+      "url": "https://highstay.com/fr/b/ou-sejourner-pendant-roland-garros/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Ou Sejourner Pendant Roland Garros"
+    },
+    {
+      "url": "https://highstay.com/b/where-to-stay-for-roland-garros/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Where To Stay For Roland Garros"
+    },
+    {
+      "url": "https://highstay.com/fr/b/que-faire-a-paris-pour-le-week-end-de-paques/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Que Faire A Paris Pour Le Week End De Paques"
+    },
+    {
+      "url": "https://highstay.com/b/what-to-do-in-paris-over-the-easter-weekend/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "What To Do In Paris Over The Easter Weekend"
+    },
+    {
+      "url": "https://highstay.com/fr/b/quelles-sont-les-meilleures-adresses-des-champs-elysees/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Quelles Sont Les Meilleures Adresses Des Champs Elysees"
+    },
+    {
+      "url": "https://highstay.com/b/what-are-the-best-spots-to-visit-on-the-champs-elysees/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "What Are The Best Spots To Visit On The Champs Elysees"
+    },
+    {
+      "url": "https://highstay.com/fr/b/sept-jardins-a-decouvrir-a-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Sept Jardins A Decouvrir A Paris"
+    },
+    {
+      "url": "https://highstay.com/b/seven-gardens-to-discover-in-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Seven Gardens To Discover In Paris"
+    },
+    {
+      "url": "https://highstay.com/fr/b/highstay-celebre-les-jeux-olympiques-de-paris/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Highstay Celebre Les Jeux Olympiques De Paris"
+    },
+    {
+      "url": "https://highstay.com/b/what-s-your-game-plan-for-paris-olympics-in-2024/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "What S Your Game Plan For Paris Olympics In 2024"
+    },
+    {
+      "url": "https://highstay.com/fr/b/les-meilleurs-quartiers-ou-sejourner-a-paris-en-couple/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "Les Meilleurs Quartiers Ou Sejourner A Paris En Couple"
+    },
+    {
+      "url": "https://highstay.com/b/the-best-area-to-stay-in-paris-for-couples/",
+      "lastmod": "2026-02-26T11:19:42.711Z",
+      "title": "The Best Area To Stay In Paris For Couples"
+    }
+  ],
+  "last_fetched": "2026-02-26T15:13:13.672629",
+  "cache_ttl_hours": 168
+}

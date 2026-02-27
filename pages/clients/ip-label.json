@@ -1,0 +1,10 @@
+{
+  "name": "IP Label",
+  "domain": "ip-label.com",
+  "sitemap_urls": [
+    "https://ip-label.com/sitemap-1.xml"
+  ],
+  "pages": [],
+  "last_fetched": null,
+  "cache_ttl_hours": 168
+}

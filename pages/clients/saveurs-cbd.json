@@ -1,0 +1,14 @@
+{
+  "name": "Saveurs CBD",
+  "domain": "www.saveurs-cbd.fr",
+  "sitemap_urls": [
+    "https://www.saveurs-cbd.fr/sitemap_products_1.xml?from=15263253496193&to=15289202442625",
+    "https://www.saveurs-cbd.fr/sitemap_pages_1.xml?from=693816230273&to=694773580161",
+    "https://www.saveurs-cbd.fr/sitemap_collections_1.xml?from=681295839617&to=682193289601",
+    "https://www.saveurs-cbd.fr/sitemap_blogs_1.xml",
+    "https://www.saveurs-cbd.fr/sitemap_metaobject_pages_1.xml"
+  ],
+  "pages": [],
+  "last_fetched": null,
+  "cache_ttl_hours": 168
+}

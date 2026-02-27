@@ -1,0 +1,12 @@
+{
+  "name": "G\u00e9rer Seul",
+  "domain": "www.gererseul.com",
+  "sitemap_urls": [
+    "https://www.gererseul.com/post-sitemap.xml",
+    "https://www.gererseul.com/post-sitemap2.xml",
+    "https://www.gererseul.com/page-sitemap.xml"
+  ],
+  "pages": [],
+  "last_fetched": null,
+  "cache_ttl_hours": 168
+}
