@@ -14,7 +14,7 @@ st.markdown("*Tous mes outils SEO regroupés en une seule application.*")
 
 st.divider()
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     st.markdown("""
@@ -24,7 +24,7 @@ with col1:
     Outil complet de rédaction SEO :
     - Analyse concurrentielle SERP via DataForSEO
     - Génération de structure Hn optimisée
-    - Rédaction paragraphe par paragraphe avec IA (Claude, OpenAI, Gemini)
+    - Rédaction paragraphe par paragraphe avec IA
     - Gestion du maillage interne via sitemap
     - Export en .docx
 
@@ -37,11 +37,26 @@ with col2:
     **SEO Technical Audit Tool Expert**
 
     Audit technique avancé :
-    - Import croisé Google Search Console + Screaming Frog
+    - Import croisé GSC + Screaming Frog
     - Analyse HTTP, balises, contenu, maillage
-    - Détection pages zombies, quick wins, thin content
+    - Détection pages zombies, quick wins
     - Analyse 404 et redirections GSC
     - Rapport IA détaillé via Claude
+
+    👉 Accède via la **sidebar** à gauche
+    """)
+
+with col3:
+    st.markdown("""
+    ### 🎯 Analyse Concurrentielle
+    **Détection de concurrents organiques**
+
+    Identifie tes vrais rivaux SEO :
+    - Détection automatique via DataForSEO Labs
+    - Score de pertinence multi-critères
+    - Analyse des mots-clés partagés
+    - Graphiques radar comparatifs
+    - Export CSV
 
     👉 Accède via la **sidebar** à gauche
     """)
