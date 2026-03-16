@@ -165,57 +165,67 @@ def analyze_business_with_claude(api_key: str, domain: str, keywords: list,
                            f"pos moy: {c['avg_position']}, trafic partagé: {c['shared_etv']:.0f})"
                            for c in seo_competitors[:30]])
 
-    prompt = f"""Tu es un expert SEO senior. Analyse le domaine "{domain}" et ses concurrents.
+    prompt = f"""Tu es un expert SEO et analyste concurrentiel senior. Analyse le domaine "{domain}" et identifie ses VRAIS concurrents business.
 
 ## Mots-clés principaux du domaine (par volume de recherche) :
 {kw_list}
 
-## Concurrents SEO détectés (par chevauchement de mots-clés) :
+## Concurrents SEO détectés par chevauchement de mots-clés (données brutes DataForSEO) :
 {comp_list}
 
-## Ta mission :
+## Ta mission — SOIS EXTRÊMEMENT PRÉCIS :
 
-### 1. Identifie le coeur de métier
-À partir du nom de domaine et de ses mots-clés, identifie précisément :
+### 1. Identifie le coeur de métier EXACT
+Analyse les mots-clés en profondeur pour comprendre :
 - Le secteur d'activité
-- Le coeur de métier précis
+- Le **coeur de métier PRÉCIS** (pas juste le secteur large). Par exemple ne dis pas "location de véhicules" si c'est "location d'utilitaires en aller simple". Le business model exact compte.
+- La proposition de valeur spécifique (qu'est-ce qui différencie cette entreprise ?)
 - Le type de clientèle cible
 
-### 2. Score chaque concurrent SEO
-Pour chaque concurrent de la liste ci-dessus, attribue un score de pertinence BUSINESS de 0 à 100 :
-- 100 = concurrent direct, même métier exact, même cible
-- 70-99 = concurrent proche, métier similaire/adjacent
-- 30-69 = acteur du même secteur large mais métier différent
-- 0-29 = pas vraiment un concurrent business (portail, annuaire, media, agrégateur...)
+### 2. Score chaque concurrent SEO sur la pertinence BUSINESS
+Pour CHAQUE concurrent de la liste SEO ci-dessus, attribue un score business de 0 à 100.
+
+CRITÈRES DE SCORING (sois sélectif et exigeant) :
+- **90-100** : Concurrent DIRECT — même métier exact, même business model, même cible, même type de service. Une entreprise qui fait la MÊME chose.
+- **70-89** : Concurrent PROCHE — métier très similaire mais avec une différence (ex: même service mais modèle différent, ou même secteur mais spécialisation différente)
+- **40-69** : Acteur ADJACENT — même secteur large mais métier clairement différent (ex: un comparateur vs un loueur, un généraliste vs un spécialiste)
+- **10-39** : FAIBLE pertinence — lien indirect avec le métier (portail d'info, site média, annuaire, carte/GPS)
+- **0-9** : PAS un concurrent business (agrégateur généraliste, site sans rapport)
+
+IMPORTANT : Un site qui partage beaucoup de mots-clés mais qui a un business model FONDAMENTALEMENT DIFFÉRENT (ex: Mappy vs une agence de location) doit avoir un score BAS.
 
 ### 3. Suggère des concurrents business manquants
-Liste jusqu'à 10 domaines de vrais concurrents business qui ne sont PAS dans la liste SEO ci-dessus.
-Ce sont des entreprises qui font le même métier mais qui peuvent être en retard en SEO.
-Donne leur domaine exact (vérifié, pas inventé).
+Identifie jusqu'à 10 entreprises qui font le MÊME MÉTIER EXACT que "{domain}" mais qui ne sont PAS dans la liste SEO.
+Ce sont les vrais rivaux business, ceux à qui "{domain}" prend des clients et vice-versa.
+Pense en termes de : "Si un client hésite entre {domain} et un autre site, ce serait lequel ?"
+
+Pour chaque concurrent business suggéré, donne aussi un business_score.
 
 ## FORMAT DE RÉPONSE OBLIGATOIRE (JSON strict) :
 ```json
 {{
   "business_analysis": {{
     "sector": "...",
-    "core_business": "...",
+    "core_business": "Description PRÉCISE du métier exact, pas juste le secteur",
+    "value_proposition": "Ce qui différencie cette entreprise",
     "target_audience": "...",
-    "summary": "Description en 2 phrases du positionnement business"
+    "summary": "Description en 2 phrases du positionnement business exact"
   }},
   "seo_competitors_scored": [
-    {{"domain": "exemple.com", "business_score": 85, "reason": "Explication courte"}}
+    {{"domain": "exemple.com", "business_score": 85, "reason": "Explication de pourquoi ce score"}}
   ],
   "missing_business_competitors": [
-    {{"domain": "exemple.com", "reason": "Explication courte de pourquoi c'est un concurrent direct"}}
+    {{"domain": "exemple.com", "business_score": 95, "reason": "Explication de pourquoi c'est un concurrent direct"}}
   ]
 }}
 ```
 
-IMPORTANT :
-- Pour missing_business_competitors, ne donne QUE des domaines réels et vérifiés, pas des domaines inventés.
-- Le JSON doit être valide et parsable.
-- Sois précis dans tes scores business : un annuaire ou un portail d'avis ne mérite PAS un score élevé.
-- Les concurrents business directs (même activité, même cible) doivent avoir les scores les plus hauts.
+RÈGLES STRICTES :
+- Pour missing_business_competitors, ne donne QUE des domaines RÉELS que tu connais avec certitude. Pas de domaines inventés.
+- Utilise toute la gamme des scores 0-100. Ne mets PAS le même score à tout le monde.
+- Un site qui vend le même service au même type de client = score 90+
+- Un portail, comparateur, annuaire, ou média = score < 40 même s'il partage beaucoup de mots-clés
+- Différencie bien les concurrents entre eux avec des scores variés.
 """
 
     response = client.messages.create(
@@ -246,16 +256,24 @@ def calculate_composite_score(seo_data: dict, business_score: float) -> float:
     Le business pèse plus lourd car c'est le problème identifié :
     un concurrent business en retard SEO doit quand même apparaître.
     """
-    intersections = seo_data.get("intersections", 0)
-    avg_position = seo_data.get("avg_position", 50)
+    avg_position = seo_data.get("avg_position", 0)
     shared_etv = seo_data.get("shared_etv", 0)
     total_etv = seo_data.get("total_etv", 1)
+    intersections = seo_data.get("intersections", 0)
 
     # Score SEO (0-100)
-    position_score = max(0, (50 - avg_position) / 50 * 100) if avg_position <= 50 else 0
+    # avg_position=0 signifie "pas de données" → score position = 0
+    if avg_position > 0:
+        position_score = max(0, (50 - avg_position) / 50 * 100) if avg_position <= 50 else 0
+    else:
+        position_score = 0
+
     traffic_ratio = min(shared_etv / max(total_etv, 1), 1.0) * 100
 
-    seo_score = (position_score * 0.5) + (traffic_ratio * 0.5)
+    # Bonus intersection : plus il y a de mots-clés en commun, mieux c'est
+    intersection_bonus = min(intersections / 20, 1.0) * 100 if intersections > 0 else 0
+
+    seo_score = (position_score * 0.35) + (traffic_ratio * 0.35) + (intersection_bonus * 0.30)
     seo_score = min(seo_score, 100)
 
     # Composite
@@ -509,6 +527,7 @@ if st.button("🚀 Lancer l'analyse concurrentielle", type="primary", use_contai
                     "pos_2_3": 0,
                     "pos_4_10": 0,
                     "source": "business",
+                    "business_score": mc.get("business_score", 70),
                     "business_reason": mc.get("reason", ""),
                 })
             st.write(f"  ✅ {len(business_only_competitors)} concurrents business enrichis")
@@ -536,10 +555,9 @@ if st.button("🚀 Lancer l'analyse concurrentielle", type="primary", use_contai
                 "source": "seo+business" if business_score >= 50 else "seo",
             })
 
-        # Concurrents business uniquement
+        # Concurrents business uniquement (avec le score donné par Claude)
         for comp in business_only_competitors:
-            # Score business élevé puisque suggéré par Claude comme concurrent direct
-            business_score = 90
+            business_score = comp.get("business_score", 70)
             composite = calculate_composite_score(comp, business_score)
 
             all_competitors.append({

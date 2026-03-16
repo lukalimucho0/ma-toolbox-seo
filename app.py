@@ -49,14 +49,14 @@ with col2:
 with col3:
     st.markdown("""
     ### 🎯 Analyse Concurrentielle
-    **Détection de concurrents organiques**
+    **Concurrents SEO + Business**
 
-    Identifie tes vrais rivaux SEO :
-    - Détection automatique via DataForSEO Labs
-    - Score de pertinence multi-critères
-    - Analyse des mots-clés partagés
-    - Graphiques radar comparatifs
-    - Export CSV
+    Identifie tes vrais rivaux :
+    - Données SEO via DataForSEO Labs
+    - Intelligence business via Claude IA
+    - Score composite 40% SEO + 60% Business
+    - Détection de concurrents hors radar SEO
+    - Graphiques radar + Export CSV
 
     👉 Accède via la **sidebar** à gauche
     """)
