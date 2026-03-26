@@ -22,7 +22,7 @@ import io
 import zipfile
 import time
 from docx import Document
-from docx.shared import Pt
+from docx.shared import Pt, RGBColor
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from urllib.parse import urlparse
@@ -317,7 +317,9 @@ def generate_structure(api_key: str, keyword: str, existing_content: dict,
    - Structure digeste et logique (pas de structure à rallonge)
    - Meilleure que l'existant ET meilleure que chaque concurrent individuellement
 
-4. Propose :
+4. RÈGLE ABSOLUE : N'inclus JAMAIS de section "modèle", "template", "exemple de lettre/courrier" dans la structure. Gérer Seul ne propose pas de modèles sur son blog. Si les concurrents en ont, ignore ces sections.
+
+5. Propose :
    - Le meilleur title SEO (< 60 caractères, mot-clé en début si possible)
    - La meilleure meta description (< 155 caractères, incitative, avec mot-clé)
    - Le H1 optimal
@@ -408,6 +410,7 @@ CONSIGNES MAILLAGE :
    - Cite les articles de loi, décrets, dates quand pertinent
    - Chaque section doit apporter une vraie valeur au lecteur
    - Ne répète pas les mêmes informations d'une section à l'autre
+   - N'inclus JAMAIS de modèle, template, exemple de lettre ou de courrier. Gérer Seul ne propose pas de modèles.
 
 2. **Format de sortie** :
    - Markdown avec ## pour H2, ### pour H3, etc.
@@ -486,6 +489,14 @@ def _add_text_with_links(paragraph, text: str):
         run.font.size = Pt(11)
 
 
+def add_black_heading(doc, text, level):
+    """Ajoute un heading avec la couleur forcée en noir."""
+    heading = doc.add_heading(text, level=level)
+    for run in heading.runs:
+        run.font.color.rgb = RGBColor(0, 0, 0)
+    return heading
+
+
 def create_docx(url: str, title_seo: str, meta_desc: str, h1: str,
                 article_markdown: str) -> io.BytesIO:
     """Génère un fichier .docx avec le format demandé."""
@@ -495,6 +506,12 @@ def create_docx(url: str, title_seo: str, meta_desc: str, h1: str,
     style = doc.styles["Normal"]
     style.font.name = "Arial"
     style.font.size = Pt(11)
+
+    # Forcer tous les styles Heading en noir
+    for i in range(1, 7):
+        style_name = f"Heading {i}"
+        if style_name in doc.styles:
+            doc.styles[style_name].font.color.rgb = RGBColor(0, 0, 0)
 
     # Ligne 1 : URL
     doc.add_paragraph(url)
@@ -506,7 +523,7 @@ def create_docx(url: str, title_seo: str, meta_desc: str, h1: str,
     doc.add_paragraph(f"meta description : {meta_desc}")
 
     # Ligne 4 : H1
-    doc.add_heading(h1, level=1)
+    add_black_heading(doc, h1, level=1)
 
     # Corps de l'article
     lines = article_markdown.split("\n")
@@ -525,7 +542,7 @@ def create_docx(url: str, title_seo: str, meta_desc: str, h1: str,
             text = heading_match.group(2).strip()
             # Nettoyer le markdown
             text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
-            doc.add_heading(text, level=level)
+            add_black_heading(doc, text, level=level)
             i += 1
             continue
 
@@ -798,8 +815,7 @@ with tab_single:
             with st.expander("📄 Aperçu de l'article", expanded=True):
                 st.markdown(result["article_preview"] + "\n\n*[...]*")
 
-            slug = re.sub(r'[^a-z0-9]+', '-', single_keyword.lower()).strip('-')
-            filename = f"refresh_{slug}.docx"
+            filename = f"{single_keyword}.docx"
 
             st.download_button(
                 f"📥 Télécharger {filename}",
@@ -899,8 +915,8 @@ with tab_bulk:
             zip_buffer = io.BytesIO()
             with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
                 for r in successful:
-                    slug = re.sub(r'[^a-z0-9]+', '-', r["keyword"].lower()).strip('-')
-                    fname = f"refresh_{slug}.docx"
+                    slug = r["keyword"]
+                    fname = f"{slug}.docx"
                     zf.writestr(fname, r["docx"].getvalue())
 
             zip_buffer.seek(0)
