@@ -377,13 +377,14 @@ def write_article(api_key: str, keyword: str, structure: dict,
 ### Pages disponibles pour le maillage interne :
 {linking_data[:6000]}
 
-CONSIGNES MAILLAGE :
-- Place entre 5 et 10 liens internes dans l'article
-- Choisis les pages les plus pertinentes par rapport au sujet traité
-- L'ancre doit refléter le H1 ou le Title de la page cible (ancre exacte ou semi-optimisée)
-- L'ancre doit s'intégrer NATURELLEMENT dans la phrase — NE CHANGE PAS le sens de la phrase pour caser un lien
+CONSIGNES MAILLAGE INTERNE — TRÈS STRICT :
+- 3 liens internes MAXIMUM dans tout l'article. Pas un de plus.
+- MÉTHODE : parcours la liste des pages ci-dessus (H1 et Title). Si tu trouves dans le texte que tu rédiges une expression qui correspond EXACTEMENT ou QUASI-EXACTEMENT au H1 ou au Title d'une de ces pages, alors tu places le lien sur cette expression.
+- L'ancre du lien DOIT être le mot-clé / H1 / Title de la page cible (ancre exacte ou très proche).
+- NE MODIFIE PAS le texte de l'article pour caser un lien. Le lien ne se pose QUE si l'ancre apparaît naturellement dans le texte.
+- Si tu ne trouves pas 3 ancres naturelles et pertinentes, mets-en moins. 0 lien vaut mieux que 3 liens forcés.
 - Format : [texte ancre](url_complete)
-- Répartis les liens dans tout l'article, pas tous au même endroit
+- INTERDIT : créer un lien sur un mot générique (ex: "immobilier", "locataire") qui n'est pas le mot-clé spécifique d'une page du site.
 """
 
     prompt = f"""{EDITORIAL_GUIDELINES}
