@@ -14,21 +14,17 @@ st.markdown("*Tous mes outils SEO regroupés en une seule application.*")
 
 st.divider()
 
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 
 with col1:
     st.markdown("""
     ### ✍️ Rédaction Contenu
     **SEO Content Writer Pro V2**
 
-    Outil complet de rédaction SEO :
-    - Analyse concurrentielle SERP via DataForSEO
-    - Génération de structure Hn optimisée
-    - Rédaction paragraphe par paragraphe avec IA
-    - Gestion du maillage interne via sitemap
-    - Export en .docx
-
-    👉 Accède via la **sidebar** à gauche
+    - Analyse SERP via DataForSEO
+    - Structure Hn optimisée + rédaction IA
+    - Maillage interne via sitemap
+    - Export .docx
     """)
 
 with col2:
@@ -36,30 +32,37 @@ with col2:
     ### 🔍 Audit SEO Technique
     **SEO Technical Audit Tool Expert**
 
-    Audit technique avancé :
     - Import croisé GSC + Screaming Frog
-    - Analyse HTTP, balises, contenu, maillage
     - Détection pages zombies, quick wins
     - Analyse 404 et redirections GSC
     - Rapport IA détaillé via Claude
-
-    👉 Accède via la **sidebar** à gauche
     """)
+
+col3, col4 = st.columns(2)
 
 with col3:
     st.markdown("""
     ### 🎯 Analyse Concurrentielle
     **Concurrents SEO + Business**
 
-    Identifie tes vrais rivaux :
-    - Données SEO via DataForSEO Labs
-    - Intelligence business via Claude IA
+    - DataForSEO Labs + Claude IA
     - Score composite 40% SEO + 60% Business
-    - Détection de concurrents hors radar SEO
+    - Détection concurrents hors radar SEO
     - Graphiques radar + Export CSV
-
-    👉 Accède via la **sidebar** à gauche
     """)
+
+with col4:
+    st.markdown("""
+    ### 🔄 Rafraîchissement Contenu
+    **Outil dédié Gérer Seul**
+
+    - Scraping article existant + concurrents
+    - Structure optimale par Claude
+    - Rédaction rafraîchie avec maillage interne
+    - Mode bulk (5 articles) + Export .docx
+    """)
+
+st.markdown("*👉 Accède aux outils via la **sidebar** à gauche*")
 
 st.divider()
 
