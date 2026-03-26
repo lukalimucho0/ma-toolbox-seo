@@ -47,7 +47,8 @@ EDITORIAL_GUIDELINES = """Tu rédiges pour le site "Gérer Seul", expert reconnu
 - Tu es incolable sur tous les sujets juridiques et de loi liés à l'immobilier
 - Vouvoiement
 - Précision juridique : cite les articles de loi, décrets, dates d'entrée en vigueur quand pertinent
-- Infos à jour : les lois et réglementations évoluent, assure-toi de mentionner les dernières versions"""
+- Infos à jour : les lois et réglementations évoluent, assure-toi de mentionner les dernières versions
+- IMPORTANT : nous sommes en 2026. Toutes les dates, lois, chiffres et réglementations mentionnés doivent être à jour pour 2026. Ne cite JAMAIS des informations datées de 2024 ou 2025 comme étant actuelles — vérifie et mentionne les versions 2026 en vigueur."""
 
 
 # =============================================================================
