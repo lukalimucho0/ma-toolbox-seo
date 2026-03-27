@@ -41,14 +41,23 @@ st.set_page_config(
 
 check_password()
 
-EDITORIAL_GUIDELINES = """Tu rédiges pour le site "Gérer Seul", expert reconnu de l'immobilier.
+DATE_CONTEXT = "Nous sommes en 2026. La date du jour est le 27 mars 2026."
+
+EDITORIAL_GUIDELINES = f"""Tu rédiges pour le site "Gérer Seul", expert reconnu de l'immobilier.
 - Ton : professionnel, expert, autoritaire mais accessible
 - Expertise : immobilier, juridique, lois, réglementations, gestion locative, copropriété
 - Tu es incolable sur tous les sujets juridiques et de loi liés à l'immobilier
 - Vouvoiement
 - Précision juridique : cite les articles de loi, décrets, dates d'entrée en vigueur quand pertinent
-- Infos à jour : les lois et réglementations évoluent, assure-toi de mentionner les dernières versions
-- IMPORTANT : nous sommes en 2026. Toutes les dates, lois, chiffres et réglementations mentionnés doivent être à jour pour 2026. Ne cite JAMAIS des informations datées de 2024 ou 2025 comme étant actuelles — vérifie et mentionne les versions 2026 en vigueur."""
+
+⚠️⚠️⚠️ RÈGLE ABSOLUE SUR LES DATES ⚠️⚠️⚠️
+{DATE_CONTEXT}
+- TOUTES les informations (lois, chiffres, montants, seuils, barèmes, taux, réglementations) DOIVENT être celles en vigueur en 2026.
+- Si tu mentionnes une date, un montant, un barème ou un seuil, il DOIT correspondre à la réalité de 2026.
+- NE CITE JAMAIS "2024" ou "2025" comme année en cours. L'année en cours est 2026.
+- Si l'article existant contient des dates 2024 ou 2025, tu DOIS les mettre à jour pour 2026.
+- En cas de doute sur un chiffre précis 2026, indique "en 2026" et donne la tendance plutôt qu'un chiffre obsolète de 2024/2025.
+⚠️⚠️⚠️ FIN RÈGLE DATES ⚠️⚠️⚠️"""
 
 
 # =============================================================================
@@ -294,7 +303,9 @@ def generate_structure(api_key: str, keyword: str, existing_content: dict,
             for h in comp["structure"][:30]:
                 comp_text += f"{'  ' * (h['level'] - 1)}H{h['level']}: {h['text']}\n"
 
-    prompt = f"""Tu es un expert SEO spécialisé en immobilier et juridique (site Gérer Seul).
+    prompt = f"""CONTEXTE TEMPOREL : {DATE_CONTEXT} Toute information doit être à jour pour 2026. Ne mentionne JAMAIS 2024 ou 2025 comme année en cours.
+
+Tu es un expert SEO spécialisé en immobilier et juridique (site Gérer Seul).
 
 ## Article existant à rafraîchir :
 - URL : {existing_content.get('url', 'N/A')}
@@ -343,6 +354,7 @@ def generate_structure(api_key: str, keyword: str, existing_content: dict,
     response = client.messages.create(
         model="claude-sonnet-4-20250514",
         max_tokens=3000,
+        system=f"Tu es un rédacteur SEO expert en immobilier pour le site Gérer Seul. {DATE_CONTEXT} Toute information (lois, montants, barèmes, seuils, taux) doit être celle en vigueur en 2026. Ne mentionne JAMAIS 2024 ou 2025 comme année en cours.",
         messages=[{"role": "user", "content": prompt}],
     )
 
@@ -421,11 +433,14 @@ CONSIGNES MAILLAGE INTERNE — TRÈS STRICT :
    - Commence directement par le contenu du premier H2
    - Pas de texte en gras, pas de mise en forme spéciale
 
+RAPPEL CRITIQUE : {DATE_CONTEXT} Chaque date, montant, seuil, barème ou loi mentionné DOIT être la version 2026. Si l'article original dit "en 2024" ou "en 2025", remplace par la version 2026 en vigueur. Ne laisse AUCUNE référence à 2024 ou 2025 comme année en cours dans l'article.
+
 Rédige l'article complet maintenant. Sois exhaustif sur chaque section."""
 
     response = client.messages.create(
         model="claude-sonnet-4-20250514",
         max_tokens=8000,
+        system=f"Tu es un rédacteur SEO expert en immobilier pour le site Gérer Seul. {DATE_CONTEXT} RÈGLE ABSOLUE : toute information (lois, montants, barèmes, seuils, taux, plafonds) doit être celle en vigueur en 2026. Si tu ne connais pas le chiffre exact 2026, écris 'en 2026' et donne la tendance. Ne cite JAMAIS 2024 ou 2025 comme année en cours. L'article existant peut contenir des dates obsolètes — remplace-les TOUTES par 2026.",
         messages=[{"role": "user", "content": prompt}],
     )
 
