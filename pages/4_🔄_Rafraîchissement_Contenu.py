@@ -336,7 +336,7 @@ def fetch_sitemap_urls(domain: str = "https://www.gererseul.com") -> list:
         if parts and any(len(p) > 5 for p in parts):
             filtered.append(url)
 
-    return filtered[:300]
+    return filtered
 
 
 def url_to_topic(url: str) -> str:
