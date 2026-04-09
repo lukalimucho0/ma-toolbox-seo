@@ -21,6 +21,7 @@ import re
 import io
 import zipfile
 import time
+import xml.etree.ElementTree as ET
 from docx import Document
 from docx.shared import Pt, RGBColor
 from docx.oxml.ns import qn
@@ -111,6 +112,22 @@ class ContentScraper:
             )
 
             # Extraire le contenu structuré
+            # Extraire les liens internes existants
+            existing_links = []
+            target_domain = urlparse(url).netloc
+            if content_area:
+                seen_urls = set()
+                for a_tag in content_area.find_all("a", href=True):
+                    href = a_tag.get("href", "").strip()
+                    anchor = a_tag.get_text(strip=True)
+                    if not href or not anchor or len(anchor) < 3:
+                        continue
+                    if href.startswith("/"):
+                        href = f"https://{target_domain}{href}"
+                    if target_domain in href and href not in seen_urls:
+                        seen_urls.add(href)
+                        existing_links.append({"url": href, "anchor": anchor})
+
             content_parts = []
             hn_structure = []
             if content_area:
@@ -139,6 +156,7 @@ class ContentScraper:
                 "h1": h1,
                 "content": content_text,
                 "hn_structure": hn_structure,
+                "existing_links": existing_links,
                 "word_count": len(content_text.split()),
                 "success": True,
             }
@@ -242,7 +260,6 @@ def parse_screaming_frog_csv(uploaded_file) -> pd.DataFrame:
     if df is None:
         raise ValueError("Impossible de lire le fichier CSV.")
 
-    # Normaliser les noms de colonnes
     col_mapping = {}
     for col in df.columns:
         cl = col.lower().strip()
@@ -267,16 +284,119 @@ def parse_screaming_frog_csv(uploaded_file) -> pd.DataFrame:
     return df
 
 
-def format_linking_data(df: pd.DataFrame, current_url: str, max_pages: int = 200) -> str:
-    """Formate les données de maillage pour le prompt Claude."""
-    filtered = df[df["url"] != current_url].head(max_pages)
-    lines = []
-    for _, row in filtered.iterrows():
-        url = row.get("url", "")
-        title = row.get("title", "")
-        h1 = row.get("h1", "")
-        lines.append(f"- URL: {url} | Title: {title} | H1: {h1}")
-    return "\n".join(lines)
+@st.cache_data(ttl=3600)
+def fetch_sitemap_urls(domain: str = "https://www.gererseul.com") -> list:
+    """Récupère toutes les URLs depuis le sitemap du site. Mis en cache 1h."""
+    headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"}
+    ns = "http://www.sitemaps.org/schemas/sitemap/0.9"
+
+    def parse_sitemap_xml(xml_content, depth=0):
+        if depth > 2:
+            return []
+        try:
+            root = ET.fromstring(xml_content)
+        except ET.ParseError:
+            return []
+
+        tag = root.tag.replace(f"{{{ns}}}", "")
+
+        if tag == "sitemapindex":
+            result = []
+            for sitemap_el in root.findall(f"{{{ns}}}sitemap"):
+                loc = sitemap_el.find(f"{{{ns}}}loc")
+                if loc is not None and loc.text:
+                    try:
+                        r = requests.get(loc.text.strip(), headers=headers, timeout=10)
+                        r.raise_for_status()
+                        result.extend(parse_sitemap_xml(r.content, depth + 1))
+                    except Exception:
+                        pass
+            return result
+        else:
+            result = []
+            for url_el in root.findall(f"{{{ns}}}url"):
+                loc = url_el.find(f"{{{ns}}}loc")
+                if loc is not None and loc.text:
+                    result.append(loc.text.strip())
+            return result
+
+    urls = []
+    try:
+        resp = requests.get(f"{domain}/sitemap.xml", headers=headers, timeout=10)
+        resp.raise_for_status()
+        urls = parse_sitemap_xml(resp.content)
+    except Exception:
+        pass
+
+    # Garder uniquement les URLs avec un slug significatif (pages articles)
+    filtered = []
+    for url in urls:
+        path = urlparse(url).path.strip("/")
+        parts = [p for p in path.split("/") if p]
+        if parts and any(len(p) > 5 for p in parts):
+            filtered.append(url)
+
+    return filtered[:300]
+
+
+def url_to_topic(url: str) -> str:
+    """Extrait le sujet depuis le slug d'URL."""
+    path = urlparse(url).path
+    parts = [p for p in path.strip("/").split("/") if p and len(p) > 2]
+    if parts:
+        return parts[-1].replace("-", " ").replace("_", " ")
+    return ""
+
+
+def build_linking_context(existing_links: list, sitemap_pages: list,
+                          current_url: str, sf_data=None) -> str:
+    """Construit le contexte de maillage interne pour le prompt Claude."""
+    parts = []
+
+    # Liens existants dans l'article original
+    if existing_links:
+        parts.append("### Liens internes DÉJÀ PRÉSENTS dans l'article original (à réintégrer OBLIGATOIREMENT) :")
+        for link in existing_links[:5]:
+            parts.append(f"- URL : {link['url']} | Ancre d'origine : \"{link['anchor']}\"")
+        parts.append("")
+
+    # Source des pages candidates : CSV Screaming Frog en priorité, sinon sitemap
+    candidate_pages = []
+    if sf_data is not None and not sf_data.empty:
+        for _, row in sf_data[sf_data["url"] != current_url].head(150).iterrows():
+            topic = row.get("h1") or row.get("title") or url_to_topic(str(row.get("url", "")))
+            candidate_pages.append({"url": row["url"], "topic": str(topic)})
+    elif sitemap_pages:
+        candidate_pages = [p for p in sitemap_pages if p["url"] != current_url][:150]
+
+    if candidate_pages:
+        parts.append("### Pages du site disponibles pour le maillage :")
+        for page in candidate_pages:
+            parts.append(f"- {page['url']}  →  {page['topic']}")
+        parts.append("")
+
+    if not parts:
+        return ""
+
+    context = "\n".join(parts)
+    rules = """
+CONSIGNES MAILLAGE INTERNE :
+
+**Règle 1 — Liens existants (priorité absolue)**
+Si des liens existants sont listés ci-dessus, tu DOIS les réintégrer dans le nouvel article avec la même URL. Adapte l'ancre à la phrase dans laquelle tu les places (l'ancre peut changer, l'URL reste identique).
+
+**Règle 2 — Nouveaux liens (pour compléter jusqu'à 3 au total)**
+Parmi les pages disponibles, sélectionne celles dont la thématique est DIRECTEMENT connexe au sujet de l'article. Pour chaque lien retenu :
+- Utilise une ancre optimisée : le mot-clé principal de la page cible (déduit de son slug ou topic), intégré naturellement dans une phrase.
+- Si l'ancre optimisée ne s'intègre pas naturellement, utilise une ancre descriptive acceptable.
+
+**Règle 3 — Format et contraintes**
+- Maximum 3 liens dans tout l'article (liens existants + nouveaux)
+- Format : [texte ancre](url_complète)
+- Liens dans le corps de l'article uniquement, répartis (pas tous au même endroit)
+- Si aucune page n'est thématiquement connexe, ne force pas de lien
+"""
+    return context + rules
 
 
 # =============================================================================
@@ -385,19 +505,7 @@ def write_article(api_key: str, keyword: str, structure: dict,
 
     linking_section = ""
     if linking_data:
-        linking_section = f"""
-### Pages disponibles pour le maillage interne :
-{linking_data[:6000]}
-
-CONSIGNES MAILLAGE INTERNE — TRÈS STRICT :
-- 3 liens internes MAXIMUM dans tout l'article. Pas un de plus.
-- MÉTHODE : parcours la liste des pages ci-dessus (H1 et Title). Si tu trouves dans le texte que tu rédiges une expression qui correspond EXACTEMENT ou QUASI-EXACTEMENT au H1 ou au Title d'une de ces pages, alors tu places le lien sur cette expression.
-- L'ancre du lien DOIT être le mot-clé / H1 / Title de la page cible (ancre exacte ou très proche).
-- NE MODIFIE PAS le texte de l'article pour caser un lien. Le lien ne se pose QUE si l'ancre apparaît naturellement dans le texte.
-- Si tu ne trouves pas 3 ancres naturelles et pertinentes, mets-en moins. 0 lien vaut mieux que 3 liens forcés.
-- Format : [texte ancre](url_complete)
-- INTERDIT : créer un lien sur un mot générique (ex: "immobilier", "locataire") qui n'est pas le mot-clé spécifique d'une page du site.
-"""
+        linking_section = f"\n## MAILLAGE INTERNE\n{linking_data[:7000]}"
 
     prompt = f"""{EDITORIAL_GUIDELINES}
 
@@ -663,9 +771,20 @@ def process_article(url: str, keyword: str, api: DataForSEOClient,
 
     # 5. Claude Phase 2 : Rédaction
     update("✍️ Claude rédige l'article rafraîchi...")
-    linking_data = ""
-    if sf_data is not None and not sf_data.empty:
-        linking_data = format_linking_data(sf_data, url)
+
+    # Construire le contexte de maillage interne
+    existing_links = existing.get("existing_links", [])
+    sitemap_pages = []
+    if sf_data is None or sf_data.empty:
+        update("🔗 Récupération du sitemap pour le maillage...")
+        raw_sitemap_urls = fetch_sitemap_urls()
+        sitemap_pages = [{"url": u, "topic": url_to_topic(u)} for u in raw_sitemap_urls]
+        if sitemap_pages:
+            update(f"  ✅ {len(sitemap_pages)} pages récupérées depuis le sitemap")
+        else:
+            update("  ⚠️ Sitemap non récupéré, maillage basé sur les liens existants uniquement")
+
+    linking_data = build_linking_context(existing_links, sitemap_pages, url, sf_data)
 
     try:
         article_content = write_article(
@@ -734,24 +853,31 @@ with st.sidebar:
     st.divider()
     st.header("🔗 Maillage interne")
     st.markdown(
-        "Upload l'export **Screaming Frog** (CSV) avec les colonnes :\n"
-        "`Address`, `Title 1`, `H1-1`"
+        "Le maillage est **automatique** via le sitemap de Gérer Seul.\n\n"
+        "Tu peux aussi uploader un export **Screaming Frog** (CSV) pour le remplacer :"
     )
 
-    sf_file = st.file_uploader("Export Screaming Frog (.csv)", type=["csv"])
+    sf_file = st.file_uploader("Export Screaming Frog (.csv) — optionnel", type=["csv"])
 
     if sf_file:
         try:
             sf_data = parse_screaming_frog_csv(sf_file)
             st.session_state["sf_data"] = sf_data
-            st.success(f"✅ {len(sf_data)} pages chargées")
+            st.success(f"✅ {len(sf_data)} pages chargées (prioritaire sur le sitemap)")
             with st.expander("Aperçu"):
                 st.dataframe(sf_data.head(15), use_container_width=True)
         except Exception as e:
             st.error(f"Erreur : {e}")
 
     if "sf_data" in st.session_state:
-        st.caption(f"📄 {len(st.session_state['sf_data'])} pages en mémoire")
+        st.caption(f"📄 {len(st.session_state['sf_data'])} pages CSV en mémoire")
+    else:
+        with st.spinner("Vérification du sitemap..."):
+            sitemap_count = len(fetch_sitemap_urls())
+        if sitemap_count > 0:
+            st.success(f"✅ {sitemap_count} pages récupérées depuis le sitemap")
+        else:
+            st.warning("⚠️ Sitemap non accessible")
 
     st.divider()
     st.markdown("""
