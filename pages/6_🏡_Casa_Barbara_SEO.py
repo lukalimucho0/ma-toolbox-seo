@@ -145,36 +145,28 @@ def _extract_tag(text: str, tag: str) -> str:
     return match.group(1).strip() if match else ""
 
 
+SITEMAP_URLS = [
+    "https://www.casabarbara.com/post-sitemap.xml",
+    "https://www.casabarbara.com/page-sitemap.xml",
+]
+
+
 @st.cache_data(ttl=86400, show_spinner=False)
 def get_sitemap_urls() -> list:
     ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
     headers = {"User-Agent": "Mozilla/5.0"}
-
-    def fetch_urls(url):
+    all_urls = []
+    for sitemap_url in SITEMAP_URLS:
         try:
-            r = requests.get(url, timeout=10, headers=headers)
+            r = requests.get(sitemap_url, timeout=10, headers=headers)
             r.raise_for_status()
             root = ET.fromstring(r.content)
-            return [loc.text.strip() for loc in root.findall(".//sm:loc", ns) if loc.text]
-        except Exception:
-            return []
-
-    try:
-        r = requests.get("https://casabarbara.com/sitemap.xml", timeout=10, headers=headers)
-        r.raise_for_status()
-        root = ET.fromstring(r.content)
-        sub_sitemaps = root.findall("sm:sitemap", ns)
-        if sub_sitemaps:
-            all_urls = []
-            for sm in sub_sitemaps[:10]:
-                loc = sm.find("sm:loc", ns)
-                if loc is not None and loc.text:
-                    all_urls.extend(fetch_urls(loc.text.strip()))
-            return all_urls
-        return [loc.text.strip() for loc in root.findall(".//sm:loc", ns) if loc.text]
-    except Exception as e:
-        st.warning(f"Sitemap inaccessible : {e}")
-        return []
+            all_urls.extend(
+                loc.text.strip() for loc in root.findall(".//sm:loc", ns) if loc.text
+            )
+        except Exception as e:
+            st.warning(f"Sitemap inaccessible ({sitemap_url}) : {e}")
+    return all_urls
 
 
 def analyze_keyword(keyword: str, urls: list, api_key: str) -> dict:
