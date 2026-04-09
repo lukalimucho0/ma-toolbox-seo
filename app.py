@@ -62,6 +62,29 @@ with col4:
     - Mode bulk (5 articles) + Export .docx
     """)
 
+col5, col6 = st.columns(2)
+
+with col5:
+    st.markdown("""
+    ### 🔀 Cannibalisation
+    **Détecteur de cannibalisation SEO**
+
+    - Analyse des chevauchements de mots-clés
+    - Identification des pages cannibalisées
+    - Recommandations de consolidation
+    """)
+
+with col6:
+    st.markdown("""
+    ### 🏡 Casa Barbara SEO
+    **Générateur d'articles Casa Barbara**
+
+    - Style et ton Casa Barbara intégrés
+    - Maillage interne via sitemap automatique
+    - Génération title, meta, slug + HTML
+    - Analyse intention & champ sémantique
+    """)
+
 st.markdown("*👉 Accède aux outils via la **sidebar** à gauche*")
 
 st.divider()
