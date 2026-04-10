@@ -384,6 +384,7 @@ Parmi les pages disponibles, sélectionne celles dont la thématique est DIRECTE
 
 **Règle 3 — Format et contraintes**
 - Maximum 6 liens dans tout l'article (liens existants + nouveaux)
+- **1 URL = 1 seul lien** : une fois qu'une URL est utilisée, elle ne doit PAS réapparaître ailleurs dans l'article
 - Format : [texte ancre](url_complète)
 - Liens dans le corps de l'article uniquement, répartis sur l'ensemble de l'article
 - Si aucune page n'est thématiquement connexe, ne force pas de lien
