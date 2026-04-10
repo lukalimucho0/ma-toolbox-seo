@@ -21,7 +21,7 @@ import re
 import io
 import zipfile
 import time
-import xml.etree.ElementTree as ET
+from datetime import date, timedelta
 from docx import Document
 from docx.shared import Pt, RGBColor
 from docx.oxml.ns import qn
@@ -284,59 +284,61 @@ def parse_screaming_frog_csv(uploaded_file) -> pd.DataFrame:
     return df
 
 
-@st.cache_data(ttl=3600)
-def fetch_sitemap_urls(domain: str = "https://www.gererseul.com") -> list:
-    """Récupère toutes les URLs depuis le sitemap du site. Mis en cache 1h."""
-    headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"}
-    ns = "http://www.sitemaps.org/schemas/sitemap/0.9"
-
-    def parse_sitemap_xml(xml_content, depth=0):
-        if depth > 2:
-            return []
-        try:
-            root = ET.fromstring(xml_content)
-        except ET.ParseError:
-            return []
-
-        tag = root.tag.replace(f"{{{ns}}}", "")
-
-        if tag == "sitemapindex":
-            result = []
-            for sitemap_el in root.findall(f"{{{ns}}}sitemap"):
-                loc = sitemap_el.find(f"{{{ns}}}loc")
-                if loc is not None and loc.text:
-                    try:
-                        r = requests.get(loc.text.strip(), headers=headers, timeout=10)
-                        r.raise_for_status()
-                        result.extend(parse_sitemap_xml(r.content, depth + 1))
-                    except Exception:
-                        pass
-            return result
-        else:
-            result = []
-            for url_el in root.findall(f"{{{ns}}}url"):
-                loc = url_el.find(f"{{{ns}}}loc")
-                if loc is not None and loc.text:
-                    result.append(loc.text.strip())
-            return result
-
-    urls = []
+def _build_gsc_service():
+    """Construit le service GSC à partir des secrets Streamlit."""
     try:
-        resp = requests.get(f"{domain}/sitemap.xml", headers=headers, timeout=10)
-        resp.raise_for_status()
-        urls = parse_sitemap_xml(resp.content)
+        from googleapiclient.discovery import build
+        if "GSC_SERVICE_ACCOUNT" in st.secrets:
+            from google.oauth2 import service_account
+            sa_info = dict(st.secrets["GSC_SERVICE_ACCOUNT"])
+            creds = service_account.Credentials.from_service_account_info(
+                sa_info,
+                scopes=["https://www.googleapis.com/auth/webmasters.readonly"],
+            )
+            return build("searchconsole", "v1", credentials=creds)
+        from google.oauth2.credentials import Credentials
+        client_id = st.secrets.get("GSC_CLIENT_ID", "")
+        client_secret = st.secrets.get("GSC_CLIENT_SECRET", "")
+        refresh_token = st.secrets.get("GSC_REFRESH_TOKEN", "")
+        if client_id and client_secret and refresh_token:
+            creds = Credentials(
+                token=None,
+                refresh_token=refresh_token,
+                client_id=client_id,
+                client_secret=client_secret,
+                token_uri="https://oauth2.googleapis.com/token",
+            )
+            return build("searchconsole", "v1", credentials=creds)
     except Exception:
         pass
+    return None
 
-    # Garder uniquement les URLs avec un slug significatif (pages articles)
-    filtered = []
-    for url in urls:
-        path = urlparse(url).path.strip("/")
-        parts = [p for p in path.split("/") if p]
-        if parts and any(len(p) > 5 for p in parts):
-            filtered.append(url)
 
-    return filtered
+@st.cache_data(ttl=3600)
+def fetch_top_gsc_urls(site_url: str = "sc-domain:gererseul.com", limit: int = 500) -> list:
+    """Récupère les top URLs par clics (6 derniers mois). Mis en cache 1h."""
+    service = _build_gsc_service()
+    if not service:
+        return []
+    end_date = date.today() - timedelta(days=3)
+    start_date = end_date - timedelta(days=180)
+    body = {
+        "startDate": start_date.strftime("%Y-%m-%d"),
+        "endDate": end_date.strftime("%Y-%m-%d"),
+        "dimensions": ["page"],
+        "rowLimit": limit,
+        "dataState": "final",
+    }
+    try:
+        resp = service.searchanalytics().query(siteUrl=site_url, body=body).execute()
+        rows = resp.get("rows", [])
+        return [
+            {"url": row["keys"][0], "topic": url_to_topic(row["keys"][0])}
+            for row in rows
+            if row.get("clicks", 0) > 0
+        ]
+    except Exception:
+        return []
 
 
 def url_to_topic(url: str) -> str:
@@ -348,30 +350,20 @@ def url_to_topic(url: str) -> str:
     return ""
 
 
-def build_linking_context(existing_links: list, sitemap_pages: list,
-                          current_url: str, sf_data=None) -> str:
+def build_linking_context(existing_links: list, candidate_pages: list, current_url: str) -> str:
     """Construit le contexte de maillage interne pour le prompt Claude."""
     parts = []
 
-    # Liens existants dans l'article original
     if existing_links:
         parts.append("### Liens internes DÉJÀ PRÉSENTS dans l'article original (à réintégrer OBLIGATOIREMENT) :")
-        for link in existing_links[:5]:
+        for link in existing_links[:6]:
             parts.append(f"- URL : {link['url']} | Ancre d'origine : \"{link['anchor']}\"")
         parts.append("")
 
-    # Source des pages candidates : CSV Screaming Frog en priorité, sinon sitemap
-    candidate_pages = []
-    if sf_data is not None and not sf_data.empty:
-        for _, row in sf_data[sf_data["url"] != current_url].head(150).iterrows():
-            topic = row.get("h1") or row.get("title") or url_to_topic(str(row.get("url", "")))
-            candidate_pages.append({"url": row["url"], "topic": str(topic)})
-    elif sitemap_pages:
-        candidate_pages = [p for p in sitemap_pages if p["url"] != current_url][:150]
-
-    if candidate_pages:
-        parts.append("### Pages du site disponibles pour le maillage :")
-        for page in candidate_pages:
+    pages = [p for p in candidate_pages if p["url"] != current_url][:150]
+    if pages:
+        parts.append("### Pages du site disponibles pour le maillage (top clics GSC) :")
+        for page in pages:
             parts.append(f"- {page['url']}  →  {page['topic']}")
         parts.append("")
 
@@ -385,15 +377,15 @@ CONSIGNES MAILLAGE INTERNE :
 **Règle 1 — Liens existants (priorité absolue)**
 Si des liens existants sont listés ci-dessus, tu DOIS les réintégrer dans le nouvel article avec la même URL. Adapte l'ancre à la phrase dans laquelle tu les places (l'ancre peut changer, l'URL reste identique).
 
-**Règle 2 — Nouveaux liens (pour compléter jusqu'à 3 au total)**
+**Règle 2 — Nouveaux liens (pour compléter jusqu'à 6 au total)**
 Parmi les pages disponibles, sélectionne celles dont la thématique est DIRECTEMENT connexe au sujet de l'article. Pour chaque lien retenu :
 - Utilise une ancre optimisée : le mot-clé principal de la page cible (déduit de son slug ou topic), intégré naturellement dans une phrase.
 - Si l'ancre optimisée ne s'intègre pas naturellement, utilise une ancre descriptive acceptable.
 
 **Règle 3 — Format et contraintes**
-- Maximum 3 liens dans tout l'article (liens existants + nouveaux)
+- Maximum 6 liens dans tout l'article (liens existants + nouveaux)
 - Format : [texte ancre](url_complète)
-- Liens dans le corps de l'article uniquement, répartis (pas tous au même endroit)
+- Liens dans le corps de l'article uniquement, répartis sur l'ensemble de l'article
 - Si aucune page n'est thématiquement connexe, ne force pas de lien
 """
     return context + rules
@@ -774,17 +766,23 @@ def process_article(url: str, keyword: str, api: DataForSEOClient,
 
     # Construire le contexte de maillage interne
     existing_links = existing.get("existing_links", [])
-    sitemap_pages = []
-    if sf_data is None or sf_data.empty:
-        update("🔗 Récupération du sitemap pour le maillage...")
-        raw_sitemap_urls = fetch_sitemap_urls()
-        sitemap_pages = [{"url": u, "topic": url_to_topic(u)} for u in raw_sitemap_urls]
-        if sitemap_pages:
-            update(f"  ✅ {len(sitemap_pages)} pages récupérées depuis le sitemap")
+    candidate_pages = []
+    if sf_data is not None and not sf_data.empty:
+        # CSV override
+        for _, row in sf_data[sf_data["url"] != url].head(150).iterrows():
+            topic = row.get("h1") or row.get("title") or url_to_topic(str(row.get("url", "")))
+            candidate_pages.append({"url": str(row["url"]), "topic": str(topic)})
+        update(f"🔗 Maillage : {len(candidate_pages)} pages depuis le CSV")
+    else:
+        # GSC (source principale)
+        update("🔗 Récupération des top URLs depuis la GSC...")
+        candidate_pages = fetch_top_gsc_urls()
+        if candidate_pages:
+            update(f"  ✅ {len(candidate_pages)} pages GSC pour le maillage")
         else:
-            update("  ⚠️ Sitemap non récupéré, maillage basé sur les liens existants uniquement")
+            update("  ⚠️ GSC non accessible, maillage sur liens existants uniquement")
 
-    linking_data = build_linking_context(existing_links, sitemap_pages, url, sf_data)
+    linking_data = build_linking_context(existing_links, candidate_pages, url)
 
     try:
         article_content = write_article(
@@ -853,8 +851,8 @@ with st.sidebar:
     st.divider()
     st.header("🔗 Maillage interne")
     st.markdown(
-        "Le maillage est **automatique** via le sitemap de Gérer Seul.\n\n"
-        "Tu peux aussi uploader un export **Screaming Frog** (CSV) pour le remplacer :"
+        "Le maillage utilise automatiquement les **top 500 URLs par clics** (GSC, 6 derniers mois).\n\n"
+        "Upload un CSV Screaming Frog pour remplacer la GSC :"
     )
 
     sf_file = st.file_uploader("Export Screaming Frog (.csv) — optionnel", type=["csv"])
@@ -863,7 +861,7 @@ with st.sidebar:
         try:
             sf_data = parse_screaming_frog_csv(sf_file)
             st.session_state["sf_data"] = sf_data
-            st.success(f"✅ {len(sf_data)} pages chargées (prioritaire sur le sitemap)")
+            st.success(f"✅ {len(sf_data)} pages CSV chargées (prioritaire sur la GSC)")
             with st.expander("Aperçu"):
                 st.dataframe(sf_data.head(15), use_container_width=True)
         except Exception as e:
@@ -872,12 +870,12 @@ with st.sidebar:
     if "sf_data" in st.session_state:
         st.caption(f"📄 {len(st.session_state['sf_data'])} pages CSV en mémoire")
     else:
-        with st.spinner("Vérification du sitemap..."):
-            sitemap_count = len(fetch_sitemap_urls())
-        if sitemap_count > 0:
-            st.success(f"✅ {sitemap_count} pages récupérées depuis le sitemap")
+        with st.spinner("Connexion GSC..."):
+            gsc_pages = fetch_top_gsc_urls()
+        if gsc_pages:
+            st.success(f"✅ {len(gsc_pages)} pages GSC chargées")
         else:
-            st.warning("⚠️ Sitemap non accessible")
+            st.warning("⚠️ GSC non accessible")
 
     st.divider()
     st.markdown("""
