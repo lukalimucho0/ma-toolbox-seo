@@ -308,7 +308,7 @@ def generate_variants(
             lines.append(f"#{r['position']} « {r['title']} » — {desc}")
         serp_ctx = "\n".join(lines)
 
-    prompt = f"""Tu es un expert SEO spécialisé dans l'optimisation CTR des balises.
+    prompt = f"""Tu es un expert SEO spécialisé dans l'optimisation des balises title et meta.
 
 MOT CLÉ CIBLE : {keyword}
 MARQUE : {brand}
@@ -322,9 +322,16 @@ TOP SERP ACTUELS (concurrents) :
 
 RÈGLES TITLE (respecter strictement) :
 - Le mot clé cible commence TOUJOURS le title, tel quel, sans modification
-- Format : {keyword} : [accroche/action percutante] | {brand}
-- 50 à 60 caractères maximum
-- L'accroche doit être différenciante par rapport aux concurrents SERP
+- Format OBLIGATOIRE : {keyword} : [accroche sémantique] | {brand}
+- La longueur n'a pas d'importance : Google réécrit souvent les titles
+- RÈGLE CRITIQUE sur l'accroche : Google supprime souvent la partie avant ":" et n'affiche
+  que "[accroche sémantique] | {brand}". L'accroche DOIT donc fonctionner seule.
+  Elle doit être riche en champ sémantique du mot clé cible : utilise des synonymes,
+  des mots clés secondaires, des variantes sémantiques, des termes de la même famille lexicale.
+  C'est une phrase ou expression SEO-dense, pas un slogan générique.
+  Exemple pour "plombier paris" : "Plombier Paris : Dépannage Urgent 24h/7j | Marque"
+  → si Google ne garde que "Dépannage Urgent 24h/7j | Marque", ça reste pertinent et bien positionné.
+- Chaque variante doit exploiter un angle sémantique différent (intention, synonyme, besoin)
 
 RÈGLES META DESCRIPTION :
 - 150 à 160 caractères
@@ -397,8 +404,8 @@ def main():
 
         st.divider()
         st.caption("**Modèle :** Claude Sonnet 4.6")
-        st.caption("**Format :** `Mot clé : Accroche | Marque`")
-        st.caption("**Title :** 50–60 car. · **Meta :** 150–160 car.")
+        st.caption("**Format :** `Mot clé : Accroche sémantique | Marque`")
+        st.caption("**Meta :** 150–160 car. · **Title :** longueur libre")
 
     # ── Formulaire principal ───────────────────────────────────
     col1, col2 = st.columns(2)
@@ -530,7 +537,7 @@ def main():
 
             st.markdown("#### 📌 Title")
             st.code(title_val, language=None)
-            st.markdown(char_badge(t_len, 50, 60), unsafe_allow_html=True)
+            st.caption(f"{t_len} caractères — longueur non contrainte (Google réécrit souvent)")
 
             st.markdown("#### 📝 Meta Description")
             st.code(meta_val, language=None)
@@ -545,23 +552,21 @@ def main():
         rows.append({
             "Var.": label,
             "Title": title_val,
-            "Car. title": len(title_val),
             "Meta Description": meta_val,
             "Car. meta": len(meta_val),
         })
     df = pd.DataFrame(rows)
 
-    def style_char(val, min_v, max_v):
-        if val > max_v:
+    def style_meta_char(val):
+        if val > 160:
             return "color: #EF4444; font-weight: bold"
-        if val < min_v:
+        if val < 150:
             return "color: #F59E0B; font-weight: bold"
         return "color: #22C55E; font-weight: bold"
 
     styled = (
         df.style
-        .applymap(lambda v: style_char(v, 50, 60), subset=["Car. title"])
-        .applymap(lambda v: style_char(v, 150, 160), subset=["Car. meta"])
+        .applymap(style_meta_char, subset=["Car. meta"])
     )
     st.dataframe(styled, use_container_width=True, hide_index=True)
 
