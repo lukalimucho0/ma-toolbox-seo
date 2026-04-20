@@ -1,5 +1,6 @@
 import streamlit as st
 from utils.auth import check_password
+import anthropic
 import google.generativeai as genai
 from PIL import Image
 import io
@@ -45,7 +46,7 @@ inject_css()
 st.markdown("""
 <div class="main-header">
     <h1>🖼️ Image à la Une</h1>
-    <p>Génère une image de couverture d'article via Imagen 3 (Google AI) à partir du H1 — une seule clé API suffit</p>
+    <p>Prompt optimisé via Claude → image générée par Imagen 3 (Google AI)</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -53,11 +54,18 @@ st.markdown("""
 with st.sidebar:
     st.header("⚙️ Configuration")
 
+    anthropic_api_key = st.text_input(
+        "Clé API Anthropic",
+        value=st.secrets.get("ANTHROPIC_API_KEY", ""),
+        type="password",
+        help="Pour générer le prompt Imagen optimisé via Claude"
+    )
+
     gemini_api_key = st.text_input(
         "Clé API Gemini",
         value=st.secrets.get("GEMINI_API_KEY", ""),
         type="password",
-        help="Google AI Studio → aistudio.google.com/app/apikey — utilisée pour le prompt ET l'image"
+        help="Google AI Studio → aistudio.google.com/app/apikey — pour Imagen 3"
     )
 
     st.divider()
@@ -108,35 +116,46 @@ extra_hints = st.text_input(
 
 # ── Generation ────────────────────────────────────────────────────────────────
 if run and h1:
+    if not anthropic_api_key:
+        st.error("❌ Clé API Anthropic manquante dans la sidebar ou les secrets Streamlit.")
+        st.stop()
     if not gemini_api_key:
         st.error("❌ Clé API Gemini manquante dans la sidebar ou les secrets Streamlit.")
         st.stop()
 
-    genai.configure(api_key=gemini_api_key)
     style_desc = STYLES[style_label]
     lang_word = "English" if prompt_lang == "en" else "French"
 
-    # ── Step 1 : Gemini Flash → optimized Imagen prompts ──────────────────────
-    with st.status("🧠 Génération des prompts via Gemini Flash…", expanded=True) as status:
+    # ── Step 1 : Claude → optimized Imagen prompts ────────────────────────────
+    with st.status("🧠 Génération des prompts via Claude…", expanded=True) as status:
         try:
-            text_model = genai.GenerativeModel("gemini-2.0-flash")
+            claude = anthropic.Anthropic(api_key=anthropic_api_key)
 
-            prompt_request = f"""You are an expert prompt engineer for Imagen 3 (Google AI image generation).
-Write {num_variants} distinct image prompt(s) in {lang_word} to illustrate this blog article: "{h1}"
-{"Extra guidance: " + extra_hints if extra_hints else ""}
+            user_msg = f'Article title: "{h1}"'
+            if extra_hints:
+                user_msg += f"\nExtra guidance: {extra_hints}"
 
-Style: {style_desc}
+            msg = claude.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=900,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": (
+                            f"You are an expert prompt engineer for Imagen 3 (Google AI image generation). "
+                            f"Write {num_variants} distinct image prompt(s) in {lang_word} to illustrate a blog article. "
+                            f"Style: {style_desc}. "
+                            "Rules: NO text/words/letters/numbers in the image. "
+                            "Describe scene, lighting, mood, colors, depth of field. Max 120 words per prompt. "
+                            "Never show clearly identifiable real people or faces. "
+                            "Output ONLY the prompts, one per line, prefixed by number (1. 2. etc.)\n\n"
+                            + user_msg
+                        ),
+                    }
+                ],
+            )
 
-Rules:
-- NO text, NO words, NO letters, NO numbers anywhere in the image
-- Describe scene composition, lighting, mood, colors, depth of field
-- Max 120 words per prompt, dense and vivid
-- Never show clearly identifiable real people or faces
-- Output ONLY the prompts, one per line, prefixed by number (1. 2. etc.)"""
-
-            response = text_model.generate_content(prompt_request)
-            raw = response.text.strip()
-
+            raw = msg.content[0].text.strip()
             prompts = []
             for line in raw.split("\n"):
                 line = line.strip()
@@ -150,13 +169,14 @@ Rules:
             status.update(label=f"✅ {len(prompts)} prompt(s) prêt(s)", state="running")
 
         except Exception as e:
-            status.update(label=f"❌ Erreur Gemini (prompt) : {e}", state="error")
+            status.update(label=f"❌ Erreur Claude : {e}", state="error")
             st.stop()
 
         # ── Step 2 : Imagen 3 image generation ────────────────────────────────
         status.update(label="🎨 Génération des images via Imagen 3…", state="running")
 
         try:
+            genai.configure(api_key=gemini_api_key)
             imagen = genai.ImageGenerationModel("imagen-3.0-generate-002")
 
             results = []
