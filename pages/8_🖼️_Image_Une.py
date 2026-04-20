@@ -1,6 +1,5 @@
 import streamlit as st
 from utils.auth import check_password
-import anthropic
 import google.generativeai as genai
 from PIL import Image
 import io
@@ -37,12 +36,6 @@ def inject_css():
         line-height: 1.5;
         color: #374151;
     }
-    .image-card {
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 1rem;
-        background: white;
-    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -52,7 +45,7 @@ inject_css()
 st.markdown("""
 <div class="main-header">
     <h1>🖼️ Image à la Une</h1>
-    <p>Génère une image de couverture d'article via Imagen 3 (Google AI) à partir du H1</p>
+    <p>Génère une image de couverture d'article via Imagen 3 (Google AI) à partir du H1 — une seule clé API suffit</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -64,14 +57,7 @@ with st.sidebar:
         "Clé API Gemini",
         value=st.secrets.get("GEMINI_API_KEY", ""),
         type="password",
-        help="Google AI Studio → aistudio.google.com/app/apikey"
-    )
-
-    anthropic_api_key = st.text_input(
-        "Clé API Anthropic",
-        value=st.secrets.get("ANTHROPIC_API_KEY", ""),
-        type="password",
-        help="Pour transformer le H1 en prompt Imagen optimisé"
+        help="Google AI Studio → aistudio.google.com/app/apikey — utilisée pour le prompt ET l'image"
     )
 
     st.divider()
@@ -123,42 +109,34 @@ extra_hints = st.text_input(
 # ── Generation ────────────────────────────────────────────────────────────────
 if run and h1:
     if not gemini_api_key:
-        st.error("❌ Clé API Gemini manquante dans la sidebar ou les secrets.")
-        st.stop()
-    if not anthropic_api_key:
-        st.error("❌ Clé API Anthropic manquante dans la sidebar ou les secrets.")
+        st.error("❌ Clé API Gemini manquante dans la sidebar ou les secrets Streamlit.")
         st.stop()
 
+    genai.configure(api_key=gemini_api_key)
     style_desc = STYLES[style_label]
     lang_word = "English" if prompt_lang == "en" else "French"
 
-    # ── Step 1 : Claude → optimized Imagen prompts ────────────────────────────
-    with st.status("🧠 Génération des prompts via Claude…", expanded=True) as status:
+    # ── Step 1 : Gemini Flash → optimized Imagen prompts ──────────────────────
+    with st.status("🧠 Génération des prompts via Gemini Flash…", expanded=True) as status:
         try:
-            claude = anthropic.Anthropic(api_key=anthropic_api_key)
+            text_model = genai.GenerativeModel("gemini-2.0-flash")
 
-            system_prompt = f"""You are an expert prompt engineer for Imagen 3 (Google AI image generation).
-Your task: write {num_variants} distinct image prompt(s) in {lang_word} to illustrate a blog article.
+            prompt_request = f"""You are an expert prompt engineer for Imagen 3 (Google AI image generation).
+Write {num_variants} distinct image prompt(s) in {lang_word} to illustrate this blog article: "{h1}"
+{"Extra guidance: " + extra_hints if extra_hints else ""}
 
-Style constraint: {style_desc}
+Style: {style_desc}
+
 Rules:
 - NO text, NO words, NO letters, NO numbers anywhere in the image
 - Describe scene composition, lighting, mood, colors, depth of field
-- Keep each prompt under 120 words, dense and vivid
+- Max 120 words per prompt, dense and vivid
 - Never show clearly identifiable real people or faces
-- Output ONLY the prompts, one per line, prefixed by the number (1. 2. etc.)"""
+- Output ONLY the prompts, one per line, prefixed by number (1. 2. etc.)"""
 
-            article_context = f'Article title: "{h1}"'
-            if extra_hints:
-                article_context += f'\nExtra guidance: {extra_hints}'
+            response = text_model.generate_content(prompt_request)
+            raw = response.text.strip()
 
-            msg = claude.messages.create(
-                model="claude-sonnet-4-6",
-                max_tokens=900,
-                messages=[{"role": "user", "content": f"{system_prompt}\n\n{article_context}"}]
-            )
-
-            raw = msg.content[0].text.strip()
             prompts = []
             for line in raw.split("\n"):
                 line = line.strip()
@@ -169,45 +147,37 @@ Rules:
                     prompts.append(cleaned)
             prompts = prompts[:num_variants]
 
-            status.update(
-                label=f"✅ {len(prompts)} prompt(s) prêt(s)",
-                state="running"
-            )
+            status.update(label=f"✅ {len(prompts)} prompt(s) prêt(s)", state="running")
 
         except Exception as e:
-            status.update(label=f"❌ Erreur Claude : {e}", state="error")
+            status.update(label=f"❌ Erreur Gemini (prompt) : {e}", state="error")
             st.stop()
 
         # ── Step 2 : Imagen 3 image generation ────────────────────────────────
         status.update(label="🎨 Génération des images via Imagen 3…", state="running")
 
         try:
-            genai.configure(api_key=gemini_api_key)
             imagen = genai.ImageGenerationModel("imagen-3.0-generate-002")
 
             results = []
             for i, prompt in enumerate(prompts):
                 status.update(label=f"🎨 Image {i + 1}/{len(prompts)} en cours…")
-                response = imagen.generate_images(
+                img_response = imagen.generate_images(
                     prompt=prompt,
                     number_of_images=1,
                     aspect_ratio=aspect_ratio,
                     safety_filter_level="block_some",
                     person_generation="allow_adult",
                 )
-                if response.images:
-                    img_obj = response.images[0]
-                    # Retrieve PIL image — try both known attribute paths
+                if img_response.images:
+                    img_obj = img_response.images[0]
                     try:
                         pil_img = img_obj._pil_image
                     except Exception:
                         pil_img = Image.open(io.BytesIO(img_obj.image.image_bytes))
                     results.append((prompt, pil_img))
 
-            status.update(
-                label=f"✅ {len(results)} image(s) générée(s) !",
-                state="complete"
-            )
+            status.update(label=f"✅ {len(results)} image(s) générée(s) !", state="complete")
 
         except Exception as e:
             status.update(label=f"❌ Erreur Imagen 3 : {e}", state="error")
