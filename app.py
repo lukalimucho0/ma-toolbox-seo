@@ -85,6 +85,19 @@ with col6:
     - Analyse intention & champ sémantique
     """)
 
+col7, col8 = st.columns(2)
+
+with col7:
+    st.markdown("""
+    ### 🖼️ Image à la Une
+    **Générateur d'images de couverture IA**
+
+    - Saisir le H1 → image prête en 30 secondes
+    - Prompt optimisé par Claude + génération Imagen 3
+    - Plusieurs variantes, styles et formats (16:9, 1:1…)
+    - Téléchargement PNG direct
+    """)
+
 st.markdown("*👉 Accède aux outils via la **sidebar** à gauche*")
 
 st.divider()
