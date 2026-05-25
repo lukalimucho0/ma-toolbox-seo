@@ -113,13 +113,13 @@ col9, col10 = st.columns(2)
 
 with col9:
     st.markdown("""
-    ### 📊 Rapport Client Automatisé
-    **Rapport SEO mensuel en un clic**
+    ### 📊 Bilan Client Automatisé
+    **Deck SEO mensuel .pptx Uplix**
 
     - Ahrefs + GSC + Claude combinés
-    - KPIs, trafic, top pages, mots-clés, backlinks
-    - Recommandations IA personnalisées
-    - Export .docx prêt à envoyer
+    - KPIs, graphiques, top pages, mots-clés
+    - DA Uplix (Poppins, couleurs, layout)
+    - Export .pptx importable Google Slides
     """)
 
 st.markdown("*👉 Accède aux outils via la **sidebar** à gauche*")

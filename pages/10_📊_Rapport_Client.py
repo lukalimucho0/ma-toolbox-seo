@@ -1,9 +1,10 @@
 """
 📊 RAPPORT CLIENT AUTOMATISÉ
 ==============================
-Génère un rapport SEO mensuel professionnel (.docx) pour chaque client.
-Combine GSC API + Ahrefs API v3 + DataForSEO + Claude pour produire
-un livrable complet : KPIs, évolutions, top pages, recommandations.
+Génère un bilan SEO mensuel professionnel (.pptx) au format Uplix.
+Combine Ahrefs API v3 + GSC API + Claude pour produire un deck
+prêt à présenter : KPIs, graphiques, top pages, recommandations.
+Importable dans Google Slides.
 """
 
 import streamlit as st
@@ -11,27 +12,33 @@ import requests
 import base64
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.express as px
 import anthropic
 import json
 import re
 import io
 import os
-import time
 import logging
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
-from docx import Document
-from docx.shared import Inches, Pt, RGBColor, Cm
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from docx.enum.table import WD_TABLE_ALIGNMENT
+from PIL import Image
+
+from pptx import Presentation
+from pptx.util import Inches, Pt, Emu, Cm
+from pptx.dml.color import RGBColor
+from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.enum.shapes import MSO_SHAPE
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 
 from utils.auth import check_password
 
 logger = logging.getLogger(__name__)
 
 # =============================================================================
-# CONFIGURATION DE LA PAGE
+# PAGE CONFIG
 # =============================================================================
 st.set_page_config(
     page_title="Rapport Client | Ma Toolbox SEO",
@@ -42,28 +49,48 @@ st.set_page_config(
 
 check_password()
 
-# =============================================================================
-# CSS
-# =============================================================================
 st.markdown("""
 <style>
     .stMetric > div { padding: 8px; }
     .section-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #1E3A5F;
-        border-left: 4px solid #667eea;
-        padding-left: 1rem;
+        font-size: 1.5rem; font-weight: 600; color: #1E3A5F;
+        border-left: 4px solid #4285F4; padding-left: 1rem;
         margin: 2rem 0 1rem 0;
     }
-    .kpi-up { color: #22C55E; font-weight: bold; }
-    .kpi-down { color: #EF4444; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
 
 
 # =============================================================================
-# CLIENTS — Chargement des configs JSON
+# UPLIX DA CONSTANTS
+# =============================================================================
+UPLIX_BLACK = RGBColor(0x00, 0x00, 0x00)
+UPLIX_DARK_GRAY = RGBColor(0x59, 0x59, 0x59)
+UPLIX_LIGHT_GRAY = RGBColor(0xEE, 0xEE, 0xEE)
+UPLIX_BG = RGBColor(0xF8, 0xF8, 0xF8)
+UPLIX_BLUE = RGBColor(0x42, 0x85, 0xF4)
+UPLIX_ORANGE = RGBColor(0xFF, 0xAB, 0x40)
+UPLIX_TEAL = RGBColor(0x00, 0x97, 0xA7)
+UPLIX_RED = RGBColor(0xEF, 0x44, 0x44)
+UPLIX_GREEN = RGBColor(0x22, 0xC5, 0x5E)
+UPLIX_WHITE = RGBColor(0xFF, 0xFF, 0xFF)
+
+FONT_TITLE = "Poppins"
+FONT_BODY = "Poppins Light"
+
+SLIDE_W = Inches(10)
+SLIDE_H = Inches(5.625)
+
+# Chart color palette (matplotlib hex)
+CHART_BLUE = "#4285F4"
+CHART_ORANGE = "#FFAB40"
+CHART_TEAL = "#0097A7"
+CHART_RED = "#EF4444"
+CHART_GRAY = "#78909C"
+
+
+# =============================================================================
+# CLIENTS
 # =============================================================================
 CLIENTS_DIR = os.path.join(os.path.dirname(__file__), "clients")
 
@@ -77,8 +104,7 @@ def load_clients() -> dict:
                     with open(os.path.join(CLIENTS_DIR, fname), "r", encoding="utf-8") as f:
                         data = json.load(f)
                     name = data.get("name", fname.replace(".json", ""))
-                    domain = data.get("domain", "")
-                    if domain:
+                    if data.get("domain"):
                         clients[name] = data
                 except Exception:
                     pass
@@ -88,28 +114,25 @@ def load_clients() -> dict:
 # =============================================================================
 # API CLIENTS
 # =============================================================================
-
 AHREFS_API_BASE = "https://api.ahrefs.com/v3"
 
 
 class AhrefsAPI:
-    def __init__(self, api_token: str):
-        self.base_url = AHREFS_API_BASE
+    def __init__(self, token: str):
         self.session = requests.Session()
         self.session.headers.update({
-            "Authorization": f"Bearer {api_token}",
+            "Authorization": f"Bearer {token}",
             "Accept": "application/json",
         })
 
     def _get(self, endpoint: str, params: dict):
-        url = f"{self.base_url}/{endpoint}"
         params["output"] = "json"
         try:
-            resp = self.session.get(url, params=params, timeout=60)
-            resp.raise_for_status()
-            return resp.json()
+            r = self.session.get(f"{AHREFS_API_BASE}/{endpoint}", params=params, timeout=60)
+            r.raise_for_status()
+            return r.json()
         except Exception as e:
-            logger.error(f"Ahrefs API error [{endpoint}]: {e}")
+            logger.error(f"Ahrefs [{endpoint}]: {e}")
             return None
 
     @staticmethod
@@ -124,34 +147,33 @@ class AhrefsAPI:
                     return v
         return []
 
-    def get_domain_rating(self, target: str, date: str):
+    def domain_rating(self, target, date):
         return self._get("site-explorer/domain-rating", {"target": target, "date": date})
 
-    def get_metrics(self, target: str, date: str, mode: str = "subdomains"):
+    def metrics(self, target, date, mode="subdomains"):
         return self._get("site-explorer/metrics", {"target": target, "date": date, "mode": mode})
 
-    def get_backlinks_stats(self, target: str, date: str, mode: str = "subdomains"):
+    def backlinks_stats(self, target, date, mode="subdomains"):
         return self._get("site-explorer/backlinks-stats", {"target": target, "date": date, "mode": mode})
 
-    def get_metrics_history(self, target: str, date_from: str, date_to: str, mode: str = "subdomains"):
+    def metrics_history(self, target, date_from, date_to, mode="subdomains"):
         return self._get("site-explorer/metrics-history", {
             "target": target, "date_from": date_from, "date_to": date_to,
             "mode": mode, "history_grouping": "monthly",
             "select": "date,org_traffic,org_cost,org_keywords,paid_traffic",
         })
 
-    def get_top_pages(self, target: str, date: str, country: str = None, limit: int = 20, mode: str = "subdomains"):
-        params = {
+    def top_pages(self, target, date, country=None, limit=15, mode="subdomains"):
+        p = {
             "target": target, "date": date, "mode": mode,
             "select": "url,sum_traffic,top_keyword,top_keyword_best_position,keywords,value",
             "order_by": "sum_traffic:desc", "limit": limit,
         }
         if country:
-            params["country"] = country
-        return self._get("site-explorer/top-pages", params)
+            p["country"] = country
+        return self._get("site-explorer/top-pages", p)
 
-    def get_organic_keywords(self, target: str, date: str, country: str = "FR",
-                             limit: int = 30, mode: str = "subdomains"):
+    def organic_keywords(self, target, date, country="FR", limit=30, mode="subdomains"):
         return self._get("site-explorer/organic-keywords", {
             "target": target, "date": date, "mode": mode,
             "country": country, "limit": limit,
@@ -159,341 +181,508 @@ class AhrefsAPI:
             "order_by": "sum_traffic:desc",
         })
 
-    def get_refdomains_history(self, target: str, date_from: str, date_to: str, mode: str = "subdomains"):
-        return self._get("site-explorer/refdomains-history", {
-            "target": target, "date_from": date_from, "date_to": date_to,
-            "mode": mode, "history_grouping": "monthly",
-        })
-
-
-class DataForSEOLabs:
-    def __init__(self, username: str, password: str):
-        self.base_url = "https://api.dataforseo.com/v3"
-        self.session = requests.Session()
-        credentials = f"{username}:{password}"
-        encoded = base64.b64encode(credentials.encode()).decode()
-        self.session.headers.update({
-            "Authorization": f"Basic {encoded}",
-            "Content-Type": "application/json"
-        })
-        self.total_cost = 0.0
-
-    def _post(self, endpoint: str, payload: list) -> dict:
-        response = self.session.post(f"{self.base_url}{endpoint}", json=payload)
-        response.raise_for_status()
-        data = response.json()
-        self.total_cost += data.get("cost", 0)
-        return data
-
-    def get_ranked_keywords(self, domain: str, location_code: int, language_code: str,
-                            limit: int = 50) -> dict:
-        return self._post("/dataforseo_labs/google/ranked_keywords/live", [{
-            "target": domain,
-            "location_code": location_code,
-            "language_code": language_code,
-            "limit": limit,
-            "item_types": ["organic"],
-            "order_by": ["keyword_data.keyword_info.search_volume,desc"]
-        }])
-
 
 class GSCAPI:
     def __init__(self):
         self.service = None
-        self._init_service()
-
-    def _init_service(self):
         try:
             from google.oauth2.credentials import Credentials
             from googleapiclient.discovery import build
-            client_id = st.secrets.get("GSC_CLIENT_ID", "")
-            client_secret = st.secrets.get("GSC_CLIENT_SECRET", "")
-            refresh_token = st.secrets.get("GSC_REFRESH_TOKEN", "")
-            if client_id and client_secret and refresh_token:
-                creds = Credentials(
-                    token=None, refresh_token=refresh_token,
-                    client_id=client_id, client_secret=client_secret,
-                    token_uri="https://oauth2.googleapis.com/token",
-                )
+            cid = st.secrets.get("GSC_CLIENT_ID", "")
+            cs = st.secrets.get("GSC_CLIENT_SECRET", "")
+            rt = st.secrets.get("GSC_REFRESH_TOKEN", "")
+            if cid and cs and rt:
+                creds = Credentials(token=None, refresh_token=rt, client_id=cid,
+                                    client_secret=cs, token_uri="https://oauth2.googleapis.com/token")
                 self.service = build("searchconsole", "v1", credentials=creds)
                 return
             if "GSC_SERVICE_ACCOUNT" in st.secrets:
                 from google.oauth2 import service_account
-                sa_info = dict(st.secrets["GSC_SERVICE_ACCOUNT"])
                 creds = service_account.Credentials.from_service_account_info(
-                    sa_info,
-                    scopes=["https://www.googleapis.com/auth/webmasters.readonly"],
-                )
+                    dict(st.secrets["GSC_SERVICE_ACCOUNT"]),
+                    scopes=["https://www.googleapis.com/auth/webmasters.readonly"])
                 self.service = build("searchconsole", "v1", credentials=creds)
         except Exception as e:
             logger.warning(f"GSC init: {e}")
 
     @property
-    def is_configured(self) -> bool:
+    def ok(self):
         return self.service is not None
 
-    def search_analytics(self, site_url: str, dimensions: list,
-                         start_date: str, end_date: str, row_limit: int = 1000):
+    def totals(self, site, start, end):
         if not self.service:
             return None
         try:
-            body = {
-                "startDate": start_date, "endDate": end_date,
-                "dimensions": dimensions, "rowLimit": row_limit,
-                "dataState": "final",
-            }
-            resp = self.service.searchanalytics().query(siteUrl=site_url, body=body).execute()
-            return resp.get("rows", [])
-        except Exception as e:
-            logger.error(f"GSC error: {e}")
-            return None
-
-    def performance_totals(self, site_url: str, start_date: str, end_date: str):
-        if not self.service:
-            return None
-        try:
-            body = {"startDate": start_date, "endDate": end_date, "dataState": "final"}
-            resp = self.service.searchanalytics().query(siteUrl=site_url, body=body).execute()
-            rows = resp.get("rows", [])
+            r = self.service.searchanalytics().query(
+                siteUrl=site, body={"startDate": start, "endDate": end, "dataState": "final"}
+            ).execute()
+            rows = r.get("rows", [])
             return rows[0] if rows else None
-        except Exception as e:
-            logger.error(f"GSC totals error: {e}")
+        except Exception:
             return None
 
+    def queries(self, site, start, end, limit=20):
+        if not self.service:
+            return []
+        try:
+            r = self.service.searchanalytics().query(
+                siteUrl=site,
+                body={"startDate": start, "endDate": end, "dimensions": ["query"],
+                      "rowLimit": limit, "dataState": "final"}
+            ).execute()
+            return r.get("rows", [])
+        except Exception:
+            return []
+
 
 # =============================================================================
-# FONCTIONS UTILITAIRES
+# UTILS
 # =============================================================================
-
-def clean_domain(url: str) -> str:
+def clean_domain(url):
     url = url.strip().lower()
     if not url.startswith(("http://", "https://")):
         url = "https://" + url
     parsed = urlparse(url)
-    domain = parsed.netloc or parsed.path
-    domain = re.sub(r'^www\.', '', domain)
-    return domain.rstrip('/')
+    d = parsed.netloc or parsed.path
+    return re.sub(r'^www\.', '', d).rstrip('/')
 
 
-def format_number(n) -> str:
+def fmt(n):
     if n is None:
         return "N/A"
     n = float(n)
     if n >= 1_000_000:
-        return f"{n / 1_000_000:.1f}M"
+        return f"{n/1_000_000:.1f}M"
     if n >= 1_000:
-        return f"{n / 1_000:.1f}K"
+        return f"{n/1_000:.1f}K"
     return f"{n:.0f}"
 
 
-def delta_str(current, previous):
-    if previous is None or previous == 0:
+def delta_pct(cur, prev):
+    if not prev:
         return "N/A", "neutral"
-    diff = current - previous
-    pct = (diff / abs(previous)) * 100
+    diff = cur - prev
+    pct = (diff / abs(prev)) * 100
     sign = "+" if diff >= 0 else ""
     direction = "up" if diff > 0 else "down" if diff < 0 else "neutral"
     return f"{sign}{pct:.1f}%", direction
 
 
-def generate_recommendations(api_key: str, report_data: dict) -> str:
-    client = anthropic.Anthropic(api_key=api_key)
+def extract_metric(data, key, default=0):
+    if data is None:
+        return default
+    if isinstance(data, dict):
+        if key in data:
+            return data[key] or default
+        for v in data.values():
+            if isinstance(v, dict) and key in v:
+                return v[key] or default
+            if isinstance(v, list) and v and isinstance(v[0], dict) and key in v[0]:
+                return v[0][key] or default
+    return default
 
-    prompt = f"""Tu es un consultant SEO senior. Rédige les recommandations du rapport mensuel pour le client "{report_data['client_name']}" (domaine : {report_data['domain']}).
 
-## Données du mois :
-- Trafic organique Ahrefs : {report_data.get('current_traffic', 'N/A')} (évolution : {report_data.get('traffic_delta', 'N/A')})
-- Mots-clés organiques : {report_data.get('current_keywords', 'N/A')} (évolution : {report_data.get('keywords_delta', 'N/A')})
-- Domain Rating : {report_data.get('domain_rating', 'N/A')}
-- Domaines référents : {report_data.get('refdomains', 'N/A')}
+# =============================================================================
+# CHART GENERATION (Matplotlib → PNG buffer)
+# =============================================================================
+def chart_traffic_evolution(history: list) -> io.BytesIO:
+    plt.rcParams.update({"font.family": "sans-serif", "font.size": 10})
+    fig, ax = plt.subplots(figsize=(8, 3.2), dpi=150)
 
-## Top pages (par trafic) :
-{report_data.get('top_pages_summary', 'Non disponible')}
+    dates = [h["date"] for h in history]
+    traffic = [h.get("traffic", 0) for h in history]
 
-## Mots-clés principaux (mouvements) :
-{report_data.get('keywords_summary', 'Non disponible')}
+    ax.fill_between(range(len(dates)), traffic, alpha=0.15, color=CHART_BLUE)
+    ax.plot(range(len(dates)), traffic, color=CHART_BLUE, linewidth=2.5, marker="o", markersize=5)
 
-## GSC (si disponible) :
-- Clics : {report_data.get('gsc_clicks', 'N/A')} | Impressions : {report_data.get('gsc_impressions', 'N/A')}
-- CTR moyen : {report_data.get('gsc_ctr', 'N/A')} | Position moyenne : {report_data.get('gsc_position', 'N/A')}
+    ax.set_xticks(range(len(dates)))
+    ax.set_xticklabels(dates, rotation=45, ha="right", fontsize=8)
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: fmt(x)))
+    ax.set_ylabel("Trafic organique estimé", fontsize=9, color="#595959")
+    ax.grid(axis="y", alpha=0.3)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
 
-## Rédige :
-1. **Synthèse du mois** (3-4 phrases) : ce qui s'est passé, la tendance générale
-2. **Points positifs** (2-3 bullets) : ce qui a bien fonctionné
-3. **Points d'attention** (2-3 bullets) : ce qui nécessite une action
-4. **Actions recommandées pour le mois prochain** (3-5 bullets priorisées) : actions concrètes et spécifiques
+    fig.tight_layout()
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    buf.seek(0)
+    return buf
 
-Sois concis, factuel, orienté action. Pas de blabla générique.
-Réponds en texte structuré (pas de JSON), avec des titres en markdown.
-"""
 
-    response = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=2000,
-        messages=[{"role": "user", "content": prompt}]
+def chart_keywords_evolution(history: list) -> io.BytesIO:
+    plt.rcParams.update({"font.family": "sans-serif", "font.size": 10})
+    fig, ax = plt.subplots(figsize=(8, 3.2), dpi=150)
+
+    dates = [h["date"] for h in history]
+    keywords = [h.get("keywords", 0) for h in history]
+
+    ax.fill_between(range(len(dates)), keywords, alpha=0.15, color=CHART_TEAL)
+    ax.plot(range(len(dates)), keywords, color=CHART_TEAL, linewidth=2.5, marker="o", markersize=5)
+
+    ax.set_xticks(range(len(dates)))
+    ax.set_xticklabels(dates, rotation=45, ha="right", fontsize=8)
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: fmt(x)))
+    ax.set_ylabel("Mots-clés organiques", fontsize=9, color="#595959")
+    ax.grid(axis="y", alpha=0.3)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    fig.tight_layout()
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    buf.seek(0)
+    return buf
+
+
+# =============================================================================
+# PPTX GENERATION — UPLIX DA
+# =============================================================================
+
+def _set_font(run, name=FONT_BODY, size=Pt(10), color=UPLIX_BLACK, bold=False):
+    run.font.name = name
+    run.font.size = size
+    run.font.color.rgb = color
+    run.font.bold = bold
+
+
+def _add_textbox(slide, left, top, width, height, text, font_name=FONT_BODY,
+                 font_size=Pt(10), color=UPLIX_BLACK, bold=False, alignment=PP_ALIGN.LEFT):
+    txBox = slide.shapes.add_textbox(left, top, width, height)
+    tf = txBox.text_frame
+    tf.word_wrap = True
+    p = tf.paragraphs[0]
+    p.alignment = alignment
+    run = p.add_run()
+    run.text = text
+    _set_font(run, font_name, font_size, color, bold)
+    return txBox
+
+
+def _add_uplix_footer(slide):
+    _add_textbox(slide, Inches(8.8), Inches(5.15), Inches(1), Inches(0.35),
+                 "Uplix", FONT_TITLE, Pt(10), UPLIX_DARK_GRAY, bold=True,
+                 alignment=PP_ALIGN.RIGHT)
+
+
+def _add_source_footer(slide, source="Ahrefs"):
+    _add_textbox(slide, Inches(3.5), Inches(5.15), Inches(3), Inches(0.35),
+                 f"Source : {source}", FONT_BODY, Pt(8), UPLIX_DARK_GRAY,
+                 alignment=PP_ALIGN.CENTER)
+
+
+def _add_slide_title(slide, title_text):
+    _add_textbox(slide, Inches(0.4), Inches(0.2), Inches(8), Inches(0.5),
+                 title_text, FONT_TITLE, Pt(18), UPLIX_BLACK, bold=True)
+
+
+def _add_content_card(slide, left, top, width, height):
+    shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = UPLIX_LIGHT_GRAY
+    shape.line.fill.background()
+    shape.shadow.inherit = False
+    return shape
+
+
+def _add_kpi_block(slide, left, top, width, label, value, subtitle="", color=UPLIX_BLACK):
+    _add_textbox(slide, left, top, width, Inches(0.25),
+                 label.upper(), FONT_BODY, Pt(7), UPLIX_DARK_GRAY, bold=True)
+    _add_textbox(slide, left, top + Inches(0.25), width, Inches(0.45),
+                 str(value), FONT_TITLE, Pt(24), color, bold=True)
+    if subtitle:
+        _add_textbox(slide, left, top + Inches(0.7), width, Inches(0.3),
+                     subtitle, FONT_BODY, Pt(8), UPLIX_DARK_GRAY)
+
+
+def create_cover_slide(prs, client_name, period, logo_bytes=None):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])  # blank
+    slide.background.fill.solid()
+    slide.background.fill.fore_color.rgb = UPLIX_WHITE
+
+    # Left vertical accent bar
+    bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.35), Inches(1.8), Inches(0.06), Inches(1.8))
+    bar.fill.solid()
+    bar.fill.fore_color.rgb = UPLIX_BLACK
+    bar.line.fill.background()
+
+    _add_textbox(slide, Inches(0.6), Inches(1.8), Inches(5), Inches(0.6),
+                 "BILAN SEO MENSUEL", FONT_TITLE, Pt(26), UPLIX_BLACK, bold=True)
+    _add_textbox(slide, Inches(0.6), Inches(2.4), Inches(5), Inches(0.5),
+                 client_name.upper(), FONT_TITLE, Pt(18), UPLIX_DARK_GRAY, bold=False)
+    _add_textbox(slide, Inches(0.6), Inches(2.9), Inches(5), Inches(0.4),
+                 period, FONT_BODY, Pt(11), UPLIX_DARK_GRAY)
+
+    if logo_bytes:
+        logo_stream = io.BytesIO(logo_bytes)
+        try:
+            img = Image.open(logo_stream)
+            w, h = img.size
+            max_h = Inches(1.2)
+            max_w = Inches(2.5)
+            ratio = min(max_w / Emu(int(w * 914400 / 96)), max_h / Emu(int(h * 914400 / 96)))
+            final_w = int(w * 914400 / 96 * ratio)
+            final_h = int(h * 914400 / 96 * ratio)
+            logo_stream.seek(0)
+            slide.shapes.add_picture(logo_stream, Inches(6.5), Inches(1.8), final_w, final_h)
+        except Exception:
+            pass
+
+    _add_textbox(slide, Inches(0.4), Inches(5.0), Inches(3), Inches(0.35),
+                 "Uplix · Tous droits réservés", FONT_BODY, Pt(8), UPLIX_DARK_GRAY)
+
+
+def create_section_slide(prs, title_text):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    slide.background.fill.solid()
+    slide.background.fill.fore_color.rgb = UPLIX_WHITE
+
+    bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.35), Inches(2.3), Inches(0.06), Inches(1.0))
+    bar.fill.solid()
+    bar.fill.fore_color.rgb = UPLIX_BLACK
+    bar.line.fill.background()
+
+    _add_textbox(slide, Inches(0.6), Inches(2.3), Inches(7), Inches(0.7),
+                 title_text.upper(), FONT_TITLE, Pt(24), UPLIX_BLACK, bold=True)
+
+    _add_textbox(slide, Inches(0.4), Inches(5.0), Inches(2), Inches(0.35),
+                 "Uplix", FONT_TITLE, Pt(10), UPLIX_DARK_GRAY, bold=True)
+
+
+def create_kpi_slide(prs, kpis: list):
+    """kpis = list of (label, value, subtitle, color)"""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    slide.background.fill.solid()
+    slide.background.fill.fore_color.rgb = UPLIX_WHITE
+
+    _add_slide_title(slide, "KPIs du mois")
+
+    _add_content_card(slide, Inches(0.4), Inches(0.9), Inches(9.2), Inches(3.8))
+
+    n = len(kpis)
+    card_w = 9.0 / n
+    for i, (label, value, subtitle, color) in enumerate(kpis):
+        left = Inches(0.5 + i * card_w)
+        _add_kpi_block(slide, left, Inches(1.3), Inches(card_w - 0.1),
+                       label, value, subtitle, color)
+
+        if i < n - 1:
+            sep = slide.shapes.add_shape(
+                MSO_SHAPE.RECTANGLE,
+                Inches(0.45 + (i + 1) * card_w), Inches(1.2),
+                Inches(0.01), Inches(1.5)
+            )
+            sep.fill.solid()
+            sep.fill.fore_color.rgb = RGBColor(0xDD, 0xDD, 0xDD)
+            sep.line.fill.background()
+
+    _add_uplix_footer(slide)
+    _add_source_footer(slide, "Ahrefs + GSC")
+
+
+def create_chart_slide(prs, title, chart_buf, source="Ahrefs"):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    slide.background.fill.solid()
+    slide.background.fill.fore_color.rgb = UPLIX_WHITE
+
+    _add_slide_title(slide, title)
+    _add_content_card(slide, Inches(0.4), Inches(0.85), Inches(9.2), Inches(4.0))
+
+    slide.shapes.add_picture(chart_buf, Inches(0.6), Inches(0.95), Inches(8.8), Inches(3.6))
+
+    _add_uplix_footer(slide)
+    _add_source_footer(slide, source)
+
+
+def create_table_slide(prs, title, headers, rows, source="Ahrefs", col_widths=None):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    slide.background.fill.solid()
+    slide.background.fill.fore_color.rgb = UPLIX_WHITE
+
+    _add_slide_title(slide, title)
+
+    n_rows = min(len(rows), 12)
+    n_cols = len(headers)
+    table_shape = slide.shapes.add_table(
+        n_rows + 1, n_cols,
+        Inches(0.4), Inches(0.85),
+        Inches(9.2), Inches(0.35 * (n_rows + 1))
     )
-    return response.content[0].text
-
-
-# =============================================================================
-# GÉNÉRATION DU DOCUMENT .DOCX
-# =============================================================================
-
-def set_cell_shading(cell, color_hex: str):
-    from docx.oxml.ns import qn
-    from lxml import etree
-    shading = etree.SubElement(cell._tc.get_or_add_tcPr(), qn("w:shd"))
-    shading.set(qn("w:fill"), color_hex)
-    shading.set(qn("w:val"), "clear")
-
-
-def add_styled_table(doc, headers: list, rows: list, col_widths: list = None):
-    table = doc.add_table(rows=1 + len(rows), cols=len(headers))
-    table.style = "Light Grid Accent 1"
-    table.alignment = WD_TABLE_ALIGNMENT.CENTER
-
-    for i, h in enumerate(headers):
-        cell = table.rows[0].cells[i]
-        cell.text = h
-        for p in cell.paragraphs:
-            for run in p.runs:
-                run.bold = True
-                run.font.size = Pt(9)
-        set_cell_shading(cell, "667eea")
-        for p in cell.paragraphs:
-            for run in p.runs:
-                run.font.color.rgb = RGBColor(255, 255, 255)
-
-    for ri, row in enumerate(rows):
-        for ci, val in enumerate(row):
-            cell = table.rows[ri + 1].cells[ci]
-            cell.text = str(val)
-            for p in cell.paragraphs:
-                for run in p.runs:
-                    run.font.size = Pt(9)
+    table = table_shape.table
 
     if col_widths:
         for i, w in enumerate(col_widths):
-            for row in table.rows:
-                row.cells[i].width = Cm(w)
+            table.columns[i].width = Inches(w)
 
-    return table
+    for i, h in enumerate(headers):
+        cell = table.cell(0, i)
+        cell.text = ""
+        p = cell.text_frame.paragraphs[0]
+        run = p.add_run()
+        run.text = h
+        _set_font(run, FONT_TITLE, Pt(8), UPLIX_WHITE, bold=True)
+        cell.fill.solid()
+        cell.fill.fore_color.rgb = RGBColor(0x32, 0x33, 0x35)
+
+    for ri, row in enumerate(rows[:n_rows]):
+        for ci, val in enumerate(row):
+            cell = table.cell(ri + 1, ci)
+            cell.text = ""
+            p = cell.text_frame.paragraphs[0]
+            run = p.add_run()
+            run.text = str(val)
+            _set_font(run, FONT_BODY, Pt(8), UPLIX_BLACK)
+            if ri % 2 == 0:
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = RGBColor(0xF8, 0xF8, 0xF8)
+
+    _add_uplix_footer(slide)
+    _add_source_footer(slide, source)
 
 
-def create_report_docx(report: dict) -> io.BytesIO:
-    doc = Document()
-
-    style = doc.styles["Normal"]
-    font = style.font
-    font.name = "Calibri"
-    font.size = Pt(10)
-
-    # --- Page de garde ---
-    doc.add_paragraph("")
-    doc.add_paragraph("")
-    title = doc.add_heading(f"Rapport SEO Mensuel", level=0)
-    title.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-
-    subtitle = doc.add_heading(report["client_name"], level=1)
-    subtitle.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-    for run in subtitle.runs:
-        run.font.color.rgb = RGBColor(102, 126, 234)
-
-    period = doc.add_paragraph(f"Période : {report['period']}")
-    period.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-
-    date_gen = doc.add_paragraph(f"Généré le {datetime.now().strftime('%d/%m/%Y')}")
-    date_gen.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-    for run in date_gen.runs:
-        run.font.size = Pt(9)
-        run.font.color.rgb = RGBColor(150, 150, 150)
-
-    doc.add_page_break()
-
-    # --- Table des matières (manuelle) ---
-    doc.add_heading("Sommaire", level=1)
-    toc_items = [
-        "1. KPIs du mois",
-        "2. Évolution du trafic organique",
-        "3. Top pages par trafic",
-        "4. Mots-clés principaux",
-        "5. Profil de liens",
-        "6. Google Search Console",
-        "7. Synthèse & Recommandations",
+def create_backlinks_slide(prs, bl_data):
+    kpis = [
+        ("Domain Rating", str(bl_data.get("domain_rating", "N/A")), "", UPLIX_BLUE),
+        ("Backlinks", fmt(bl_data.get("live_backlinks", 0)), "Liens entrants actifs", UPLIX_BLACK),
+        ("Domaines référents", fmt(bl_data.get("live_refdomains", 0)), "Domaines uniques", UPLIX_TEAL),
+        ("DoFollow", fmt(bl_data.get("dofollow", 0)), f"NoFollow : {fmt(bl_data.get('nofollow', 0))}", UPLIX_GREEN),
     ]
-    for item in toc_items:
-        p = doc.add_paragraph(item)
-        p.style = "List Number"
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    slide.background.fill.solid()
+    slide.background.fill.fore_color.rgb = UPLIX_WHITE
 
-    doc.add_page_break()
+    _add_slide_title(slide, "Profil de liens")
+    _add_content_card(slide, Inches(0.4), Inches(0.9), Inches(9.2), Inches(2.5))
 
-    # --- 1. KPIs ---
-    doc.add_heading("1. KPIs du mois", level=1)
+    n = len(kpis)
+    card_w = 9.0 / n
+    for i, (label, value, subtitle, color) in enumerate(kpis):
+        _add_kpi_block(slide, Inches(0.5 + i * card_w), Inches(1.2),
+                       Inches(card_w - 0.1), label, value, subtitle, color)
 
-    kpis = report.get("kpis", {})
-    kpi_headers = ["Indicateur", "Valeur actuelle", "Mois précédent", "Évolution"]
-    kpi_rows = []
-    for label, data in kpis.items():
-        kpi_rows.append([
-            label,
-            str(data.get("current", "N/A")),
-            str(data.get("previous", "N/A")),
-            data.get("delta", "N/A"),
-        ])
-    if kpi_rows:
-        add_styled_table(doc, kpi_headers, kpi_rows, [5, 3.5, 3.5, 3])
+    _add_uplix_footer(slide)
+    _add_source_footer(slide, "Ahrefs")
 
-    doc.add_paragraph("")
 
-    # --- 2. Évolution trafic ---
-    doc.add_heading("2. Évolution du trafic organique", level=1)
+def create_recommendations_slide(prs, reco_text):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    slide.background.fill.solid()
+    slide.background.fill.fore_color.rgb = UPLIX_WHITE
 
+    _add_slide_title(slide, "Synthèse & Recommandations")
+
+    _add_content_card(slide, Inches(0.4), Inches(0.85), Inches(9.2), Inches(4.0))
+
+    txBox = slide.shapes.add_textbox(Inches(0.6), Inches(1.0), Inches(8.8), Inches(3.7))
+    tf = txBox.text_frame
+    tf.word_wrap = True
+
+    lines = reco_text.strip().split("\n")
+    first = True
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+
+        if not first:
+            p = tf.add_paragraph()
+        else:
+            p = tf.paragraphs[0]
+            first = False
+
+        p.space_after = Pt(4)
+
+        if line.startswith("## ") or line.startswith("### "):
+            clean = line.lstrip("#").strip()
+            run = p.add_run()
+            run.text = clean
+            _set_font(run, FONT_TITLE, Pt(11), UPLIX_BLACK, bold=True)
+            p.space_before = Pt(8)
+        elif line.startswith("- ") or line.startswith("* "):
+            run = p.add_run()
+            run.text = "  •  " + line[2:]
+            _set_font(run, FONT_BODY, Pt(9), UPLIX_DARK_GRAY)
+        elif line.startswith("**") and line.endswith("**"):
+            run = p.add_run()
+            run.text = line.replace("**", "")
+            _set_font(run, FONT_TITLE, Pt(10), UPLIX_BLACK, bold=True)
+        else:
+            run = p.add_run()
+            run.text = line
+            _set_font(run, FONT_BODY, Pt(9), UPLIX_DARK_GRAY)
+
+    _add_uplix_footer(slide)
+
+
+def create_closing_slide(prs):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    slide.background.fill.solid()
+    slide.background.fill.fore_color.rgb = UPLIX_WHITE
+
+    bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.35), Inches(2.3), Inches(0.06), Inches(1.0))
+    bar.fill.solid()
+    bar.fill.fore_color.rgb = UPLIX_BLACK
+    bar.line.fill.background()
+
+    _add_textbox(slide, Inches(0.6), Inches(2.3), Inches(7), Inches(0.7),
+                 "MERCI", FONT_TITLE, Pt(28), UPLIX_BLACK, bold=True)
+    _add_textbox(slide, Inches(0.6), Inches(3.0), Inches(7), Inches(0.4),
+                 "Des questions ?", FONT_BODY, Pt(14), UPLIX_DARK_GRAY)
+
+    _add_textbox(slide, Inches(0.4), Inches(5.0), Inches(3), Inches(0.35),
+                 "Uplix · Tous droits réservés", FONT_BODY, Pt(8), UPLIX_DARK_GRAY)
+
+
+def generate_report_pptx(report: dict) -> io.BytesIO:
+    prs = Presentation()
+    prs.slide_width = SLIDE_W
+    prs.slide_height = SLIDE_H
+
+    # 1. Cover
+    create_cover_slide(prs, report["client_name"], report["period"],
+                       report.get("logo_bytes"))
+
+    # 2. KPIs
+    kpis = report.get("kpis_list", [])
+    if kpis:
+        create_kpi_slide(prs, kpis)
+
+    # 3. Traffic evolution chart
     history = report.get("traffic_history", [])
     if history:
-        p = doc.add_paragraph("Évolution mensuelle du trafic organique estimé (Ahrefs) :")
-        p.italic = True
+        buf = chart_traffic_evolution(history)
+        create_chart_slide(prs, "Évolution du trafic organique", buf, "Ahrefs")
 
-        hist_headers = ["Mois", "Trafic organique", "Mots-clés", "Valeur ($)"]
-        hist_rows = [[h["date"], format_number(h.get("traffic", 0)),
-                       format_number(h.get("keywords", 0)),
-                       f"${format_number(h.get('cost', 0))}"] for h in history]
-        add_styled_table(doc, hist_headers, hist_rows, [4, 3.5, 3.5, 3.5])
-    else:
-        doc.add_paragraph("Données non disponibles.")
+    # 4. Keywords evolution chart
+    if history and any(h.get("keywords", 0) > 0 for h in history):
+        buf = chart_keywords_evolution(history)
+        create_chart_slide(prs, "Évolution des mots-clés organiques", buf, "Ahrefs")
 
-    doc.add_paragraph("")
-
-    # --- 3. Top pages ---
-    doc.add_heading("3. Top pages par trafic", level=1)
-
+    # 5. Top pages
     top_pages = report.get("top_pages", [])
     if top_pages:
-        tp_headers = ["URL", "Trafic", "Top mot-clé", "Position"]
-        tp_rows = []
-        for pg in top_pages[:15]:
-            url_short = pg.get("url", "")
-            if len(url_short) > 60:
-                url_short = url_short[:57] + "..."
-            tp_rows.append([
-                url_short,
-                format_number(pg.get("traffic", 0)),
-                pg.get("top_keyword", ""),
-                str(pg.get("position", "")),
+        headers = ["URL", "Trafic", "Top mot-clé", "Pos.", "KWs"]
+        rows = []
+        for p in top_pages[:12]:
+            url = p.get("url", "")
+            if len(url) > 55:
+                url = url[:52] + "..."
+            rows.append([
+                url, fmt(p.get("traffic", 0)),
+                p.get("top_keyword", ""), str(p.get("position", "")),
+                str(p.get("keywords_count", ""))
             ])
-        add_styled_table(doc, tp_headers, tp_rows, [7, 2.5, 3.5, 2])
-    else:
-        doc.add_paragraph("Données non disponibles.")
+        create_table_slide(prs, "Top pages par trafic", headers, rows, "Ahrefs",
+                          [4.5, 1.0, 2.0, 0.7, 0.7])
 
-    doc.add_paragraph("")
-
-    # --- 4. Mots-clés ---
-    doc.add_heading("4. Mots-clés principaux", level=1)
-
+    # 6. Keywords
     keywords = report.get("keywords", [])
     if keywords:
-        kw_headers = ["Mot-clé", "Volume", "Position", "Mouvement", "Trafic"]
-        kw_rows = []
-        for kw in keywords[:25]:
+        headers = ["Mot-clé", "Volume", "Pos.", "Mvt", "Trafic"]
+        rows = []
+        for kw in keywords[:12]:
             diff = kw.get("position_diff", 0) or 0
             if diff > 0:
                 mvt = f"↑ +{diff}"
@@ -501,130 +690,107 @@ def create_report_docx(report: dict) -> io.BytesIO:
                 mvt = f"↓ {diff}"
             else:
                 mvt = "="
-            kw_rows.append([
-                kw.get("keyword", ""),
-                format_number(kw.get("volume", 0)),
-                str(kw.get("position", "")),
-                mvt,
-                format_number(kw.get("traffic", 0)),
+            rows.append([
+                kw.get("keyword", ""), fmt(kw.get("volume", 0)),
+                str(kw.get("position", "")), mvt, fmt(kw.get("traffic", 0))
             ])
-        add_styled_table(doc, kw_headers, kw_rows, [5, 2, 2, 2.5, 2.5])
-    else:
-        doc.add_paragraph("Données non disponibles.")
+        create_table_slide(prs, "Mots-clés principaux", headers, rows, "Ahrefs",
+                          [3.5, 1.2, 0.8, 1.0, 1.2])
 
-    doc.add_paragraph("")
+    # 7. Backlinks
+    bl = report.get("backlinks", {})
+    if bl:
+        create_backlinks_slide(prs, bl)
 
-    # --- 5. Profil de liens ---
-    doc.add_heading("5. Profil de liens", level=1)
+    # 8. GSC
+    gsc = report.get("gsc", {})
+    if gsc.get("available"):
+        cur = gsc.get("current", {})
+        prev = gsc.get("previous", {})
+        clicks_d, _ = delta_pct(cur.get("clicks", 0), prev.get("clicks", 0))
+        impr_d, _ = delta_pct(cur.get("impressions", 0), prev.get("impressions", 0))
 
-    backlinks = report.get("backlinks", {})
-    if backlinks:
-        bl_headers = ["Métrique", "Valeur"]
-        bl_rows = [
-            ["Domain Rating", str(backlinks.get("domain_rating", "N/A"))],
-            ["Backlinks totaux", format_number(backlinks.get("live_backlinks", 0))],
-            ["Domaines référents", format_number(backlinks.get("live_refdomains", 0))],
-            ["Backlinks DoFollow", format_number(backlinks.get("dofollow", 0))],
-            ["Backlinks NoFollow", format_number(backlinks.get("nofollow", 0))],
+        gsc_kpis = [
+            ("Clics", fmt(cur.get("clicks", 0)), clicks_d, UPLIX_BLUE),
+            ("Impressions", fmt(cur.get("impressions", 0)), impr_d, UPLIX_BLACK),
+            ("CTR moyen", f"{cur.get('ctr', 0) * 100:.2f}%", "", UPLIX_TEAL),
+            ("Position moyenne", f"{cur.get('position', 0):.1f}", "", UPLIX_ORANGE),
         ]
-        add_styled_table(doc, bl_headers, bl_rows, [6, 6])
-    else:
-        doc.add_paragraph("Données non disponibles (clé API Ahrefs requise).")
+        create_kpi_slide(prs, gsc_kpis)
 
-    doc.add_paragraph("")
-
-    # --- 6. GSC ---
-    doc.add_heading("6. Google Search Console", level=1)
-
-    gsc_data = report.get("gsc", {})
-    if gsc_data.get("available"):
-        gsc_current = gsc_data.get("current", {})
-        gsc_previous = gsc_data.get("previous", {})
-
-        gsc_headers = ["Métrique", "Période actuelle", "Période précédente", "Évolution"]
-        gsc_rows = []
-        for metric_label, metric_key in [
-            ("Clics", "clicks"), ("Impressions", "impressions"),
-            ("CTR moyen", "ctr"), ("Position moyenne", "position"),
-        ]:
-            cur = gsc_current.get(metric_key, 0)
-            prev = gsc_previous.get(metric_key, 0)
-            if metric_key == "ctr":
-                cur_str = f"{cur * 100:.1f}%"
-                prev_str = f"{prev * 100:.1f}%"
-            elif metric_key == "position":
-                cur_str = f"{cur:.1f}"
-                prev_str = f"{prev:.1f}"
-            else:
-                cur_str = format_number(cur)
-                prev_str = format_number(prev)
-            d, _ = delta_str(cur, prev)
-            gsc_rows.append([metric_label, cur_str, prev_str, d])
-
-        add_styled_table(doc, gsc_headers, gsc_rows, [4, 3.5, 3.5, 3])
-
-        # Top requêtes GSC
-        gsc_queries = gsc_data.get("top_queries", [])
-        if gsc_queries:
-            doc.add_paragraph("")
-            doc.add_heading("Top requêtes GSC", level=2)
-            q_headers = ["Requête", "Clics", "Impressions", "CTR", "Position"]
-            q_rows = []
-            for q in gsc_queries[:20]:
+        # GSC top queries table
+        queries = gsc.get("top_queries", [])
+        if queries:
+            headers = ["Requête", "Clics", "Impressions", "CTR", "Pos."]
+            rows = []
+            for q in queries[:12]:
                 keys = q.get("keys", [""])
-                q_rows.append([
+                rows.append([
                     keys[0] if keys else "",
-                    format_number(q.get("clicks", 0)),
-                    format_number(q.get("impressions", 0)),
-                    f"{q.get('ctr', 0) * 100:.1f}%",
-                    f"{q.get('position', 0):.1f}",
+                    fmt(q.get("clicks", 0)), fmt(q.get("impressions", 0)),
+                    f"{q.get('ctr', 0) * 100:.1f}%", f"{q.get('position', 0):.1f}"
                 ])
-            add_styled_table(doc, q_headers, q_rows, [5, 2, 2.5, 2, 2.5])
-    else:
-        doc.add_paragraph("GSC non connecté. Connectez les credentials GSC pour enrichir le rapport.")
+            create_table_slide(prs, "Top requêtes GSC", headers, rows, "Google Search Console",
+                              [3.5, 1.2, 1.5, 1.0, 1.0])
 
-    doc.add_paragraph("")
+    # 9. Recommendations
+    reco = report.get("recommendations", "")
+    if reco:
+        create_recommendations_slide(prs, reco)
 
-    # --- 7. Recommandations ---
-    doc.add_heading("7. Synthèse & Recommandations", level=1)
+    # 10. Closing
+    create_closing_slide(prs)
 
-    recommendations = report.get("recommendations", "")
-    if recommendations:
-        for line in recommendations.split("\n"):
-            line = line.strip()
-            if not line:
-                doc.add_paragraph("")
-            elif line.startswith("## "):
-                doc.add_heading(line.replace("## ", ""), level=2)
-            elif line.startswith("### "):
-                doc.add_heading(line.replace("### ", ""), level=3)
-            elif line.startswith("- ") or line.startswith("* "):
-                doc.add_paragraph(line[2:], style="List Bullet")
-            elif line.startswith("**") and line.endswith("**"):
-                p = doc.add_paragraph()
-                run = p.add_run(line.replace("**", ""))
-                run.bold = True
-            else:
-                doc.add_paragraph(line)
-    else:
-        doc.add_paragraph("Recommandations non générées.")
-
-    # --- Footer ---
-    doc.add_page_break()
-    footer = doc.add_paragraph("Rapport généré automatiquement par Ma Toolbox SEO")
-    footer.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-    for run in footer.runs:
-        run.font.size = Pt(8)
-        run.font.color.rgb = RGBColor(150, 150, 150)
-
-    buffer = io.BytesIO()
-    doc.save(buffer)
-    buffer.seek(0)
-    return buffer
+    buf = io.BytesIO()
+    prs.save(buf)
+    buf.seek(0)
+    return buf
 
 
 # =============================================================================
-# CONSTANTES
+# CLAUDE RECOMMENDATIONS
+# =============================================================================
+def generate_recommendations(api_key, data):
+    client = anthropic.Anthropic(api_key=api_key)
+    prompt = f"""Tu es un consultant SEO senior chez Uplix. Rédige la synthèse du bilan mensuel pour le client "{data['client_name']}" ({data['domain']}).
+
+Données du mois :
+- Trafic organique : {data.get('current_traffic', 'N/A')} ({data.get('traffic_delta', 'N/A')})
+- Mots-clés : {data.get('current_keywords', 'N/A')} ({data.get('keywords_delta', 'N/A')})
+- DR : {data.get('domain_rating', 'N/A')} | Refdomains : {data.get('refdomains', 'N/A')}
+
+Top pages :
+{data.get('top_pages_summary', 'N/A')}
+
+Mots-clés (mouvements) :
+{data.get('keywords_summary', 'N/A')}
+
+GSC : Clics {data.get('gsc_clicks', 'N/A')} | Impressions {data.get('gsc_impressions', 'N/A')} | CTR {data.get('gsc_ctr', 'N/A')} | Pos moy {data.get('gsc_position', 'N/A')}
+
+Rédige en français, format markdown :
+## Synthèse du mois
+3-4 phrases factuelles
+
+## Points positifs
+- 2-3 bullets
+
+## Points d'attention
+- 2-3 bullets
+
+## Actions recommandées
+- 3-5 bullets priorisées et concrètes
+
+Sois concis, factuel, orienté action. Pas de blabla.
+"""
+    r = client.messages.create(
+        model="claude-sonnet-4-20250514", max_tokens=1500,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return r.content[0].text
+
+
+# =============================================================================
+# LOCATIONS
 # =============================================================================
 LOCATIONS = {
     "France": {"code": 2250, "lang": "fr", "ahrefs": "FR"},
@@ -635,48 +801,26 @@ LOCATIONS = {
     "Royaume-Uni": {"code": 2826, "lang": "en", "ahrefs": "GB"},
     "Allemagne": {"code": 2276, "lang": "de", "ahrefs": "DE"},
     "Espagne": {"code": 2724, "lang": "es", "ahrefs": "ES"},
-    "Italie": {"code": 2380, "lang": "it", "ahrefs": "IT"},
 }
 
 
 # =============================================================================
-# INTERFACE
+# STREAMLIT UI
 # =============================================================================
 st.title("📊 Rapport Client Automatisé")
-st.markdown("*Génère un rapport SEO mensuel complet en un clic. GSC + Ahrefs + Claude.*")
+st.markdown("*Génère un bilan SEO mensuel .pptx au format Uplix. Importable dans Google Slides.*")
 
-# ─── Sidebar ───
 with st.sidebar:
     st.header("⚙️ Configuration API")
 
-    anthropic_key = st.text_input(
-        "Clé API Claude (Anthropic)",
-        value=st.secrets.get("ANTHROPIC_API_KEY", ""),
-        type="password"
-    )
-    ahrefs_token = st.text_input(
-        "Token API Ahrefs",
-        value=st.secrets.get("AHREFS_API_TOKEN", ""),
-        type="password"
-    )
-    dataforseo_username = st.text_input(
-        "Username DataForSEO",
-        value=st.secrets.get("DATAFORSEO_USERNAME", ""),
-        type="password"
-    )
-    dataforseo_password = st.text_input(
-        "Password DataForSEO",
-        value=st.secrets.get("DATAFORSEO_PASSWORD", ""),
-        type="password"
-    )
+    anthropic_key = st.text_input("Clé API Claude", value=st.secrets.get("ANTHROPIC_API_KEY", ""), type="password")
+    ahrefs_token = st.text_input("Token Ahrefs", value=st.secrets.get("AHREFS_API_TOKEN", ""), type="password")
 
     st.divider()
     st.header("📊 Paramètres du rapport")
 
-    # Client selection
     clients = load_clients()
     client_names = list(clients.keys())
-
     if client_names:
         selected_client = st.selectbox("Client", ["— Saisie manuelle —"] + client_names)
     else:
@@ -693,396 +837,230 @@ with st.sidebar:
 
     selected_location = st.selectbox("Pays cible", list(LOCATIONS.keys()), index=0)
 
-    report_period = st.selectbox("Période du rapport", [
-        "Dernier mois",
-        "3 derniers mois",
-        "6 derniers mois",
-    ], index=0)
+    report_period = st.selectbox("Période", ["Dernier mois", "3 derniers mois", "6 derniers mois"])
 
-    gsc_property = st.text_input(
-        "Propriété GSC (optionnel)",
-        placeholder="sc-domain:monsite.fr ou https://www.monsite.fr/",
-        help="Laisse vide si GSC n'est pas connecté"
-    )
+    logo_file = st.file_uploader("Logo du client (PNG/JPG)", type=["png", "jpg", "jpeg", "svg"])
+
+    gsc_property = st.text_input("Propriété GSC (optionnel)", placeholder="sc-domain:monsite.fr")
 
     st.divider()
     st.markdown("""
-    ### Sources de données
-
-    | Source | Données |
-    |--------|---------|
-    | **Ahrefs** | DR, trafic, keywords, backlinks, top pages |
-    | **GSC** | Clics, impressions, CTR, positions, requêtes |
-    | **Claude** | Synthèse et recommandations |
-
-    Le rapport est généré en `.docx` prêt à envoyer au client.
+    ### Le rapport contient
+    1. **Cover** avec logo client
+    2. **KPIs** avec évolutions
+    3. **Courbe trafic** (12 mois)
+    4. **Courbe mots-clés** (12 mois)
+    5. **Top pages** (tableau)
+    6. **Mots-clés principaux** (tableau)
+    7. **Profil de liens**
+    8. **GSC** (si connecté)
+    9. **Recommandations** (Claude)
+    10. **Slide de clôture**
     """)
 
-
-# ─── Validations ───
+# Validations
 if not anthropic_key:
     st.warning("Configure ta clé API Claude dans la sidebar.")
     st.stop()
-
 if not ahrefs_token:
     st.warning("Configure ton token Ahrefs dans la sidebar.")
     st.stop()
-
 if not target_domain:
-    st.info("Sélectionne un client ou entre un domaine dans la sidebar.")
+    st.info("Sélectionne un client ou entre un domaine.")
     st.stop()
 
 domain = clean_domain(target_domain)
 st.markdown(f"**Client** : {client_display_name} | **Domaine** : `{domain}` | **Pays** : {selected_location}")
 
-
-if st.button("🚀 Générer le rapport", type="primary", use_container_width=True):
+if st.button("🚀 Générer le bilan", type="primary", use_container_width=True):
     loc = LOCATIONS[selected_location]
     ahrefs = AhrefsAPI(ahrefs_token)
 
-    # Dates
     today = datetime.now()
     end_date = (today - timedelta(days=3)).strftime("%Y-%m-%d")
-
     period_days = {"Dernier mois": 30, "3 derniers mois": 90, "6 derniers mois": 180}[report_period]
     start_date = (today - timedelta(days=period_days + 3)).strftime("%Y-%m-%d")
-
-    prev_end = (today - timedelta(days=period_days + 3)).strftime("%Y-%m-%d")
+    prev_end = start_date
     prev_start = (today - timedelta(days=period_days * 2 + 3)).strftime("%Y-%m-%d")
-
     history_start = (today - timedelta(days=365)).strftime("%Y-%m-%d")
-
     period_label = f"{(today - timedelta(days=period_days + 3)).strftime('%d/%m/%Y')} — {(today - timedelta(days=3)).strftime('%d/%m/%Y')}"
 
-    report_data = {
-        "client_name": client_display_name,
-        "domain": domain,
-        "period": period_label,
-    }
+    logo_bytes = logo_file.read() if logo_file else None
 
-    with st.status("Génération du rapport en cours...", expanded=True) as status:
+    with st.status("Génération du bilan en cours...", expanded=True) as status:
 
-        # ── Phase 1 : Ahrefs ──
+        # ── Ahrefs ──
         st.write("📊 **Phase 1** — Collecte Ahrefs...")
 
-        # Domain Rating
-        dr_data = ahrefs.get_domain_rating(domain, end_date)
-        domain_rating = None
-        if dr_data:
-            domain_rating = dr_data.get("domain_rating") or dr_data.get("ahrefs_rank")
-            if isinstance(dr_data, dict):
-                for v in dr_data.values():
-                    if isinstance(v, dict) and "domain_rating" in v:
-                        domain_rating = v["domain_rating"]
-                        break
-                    elif isinstance(v, (int, float)) and domain_rating is None:
-                        domain_rating = v
-        st.write(f"  ✅ Domain Rating : {domain_rating or 'N/A'}")
+        dr_data = ahrefs.domain_rating(domain, end_date)
+        domain_rating = extract_metric(dr_data, "domain_rating")
+        st.write(f"  ✅ DR : {domain_rating or 'N/A'}")
 
-        # Metrics current
-        metrics_current = ahrefs.get_metrics(domain, end_date)
-        current_traffic = 0
-        current_keywords = 0
-        if metrics_current:
-            if isinstance(metrics_current, dict):
-                for v in metrics_current.values():
-                    if isinstance(v, dict):
-                        current_traffic = v.get("org_traffic", 0) or 0
-                        current_keywords = v.get("org_keywords", 0) or 0
-                        break
-                    elif isinstance(v, list) and v:
-                        current_traffic = v[0].get("org_traffic", 0) or 0
-                        current_keywords = v[0].get("org_keywords", 0) or 0
-                        break
+        cur_metrics = ahrefs.metrics(domain, end_date)
+        current_traffic = extract_metric(cur_metrics, "org_traffic")
+        current_keywords = extract_metric(cur_metrics, "org_keywords")
 
-        # Metrics previous
-        metrics_prev = ahrefs.get_metrics(domain, prev_end)
-        prev_traffic = 0
-        prev_keywords = 0
-        if metrics_prev:
-            if isinstance(metrics_prev, dict):
-                for v in metrics_prev.values():
-                    if isinstance(v, dict):
-                        prev_traffic = v.get("org_traffic", 0) or 0
-                        prev_keywords = v.get("org_keywords", 0) or 0
-                        break
-                    elif isinstance(v, list) and v:
-                        prev_traffic = v[0].get("org_traffic", 0) or 0
-                        prev_keywords = v[0].get("org_keywords", 0) or 0
-                        break
+        prev_metrics = ahrefs.metrics(domain, prev_end)
+        prev_traffic = extract_metric(prev_metrics, "org_traffic")
+        prev_keywords = extract_metric(prev_metrics, "org_keywords")
 
-        traffic_delta, traffic_dir = delta_str(current_traffic, prev_traffic)
-        keywords_delta, kw_dir = delta_str(current_keywords, prev_keywords)
+        traffic_delta, t_dir = delta_pct(current_traffic, prev_traffic)
+        kw_delta, k_dir = delta_pct(current_keywords, prev_keywords)
 
-        st.write(f"  ✅ Trafic organique : {format_number(current_traffic)} ({traffic_delta})")
-        st.write(f"  ✅ Mots-clés : {format_number(current_keywords)} ({keywords_delta})")
+        st.write(f"  ✅ Trafic : {fmt(current_traffic)} ({traffic_delta})")
+        st.write(f"  ✅ Mots-clés : {fmt(current_keywords)} ({kw_delta})")
 
-        # Backlinks stats
-        bl_stats = ahrefs.get_backlinks_stats(domain, end_date)
-        backlinks_data = {}
-        if bl_stats:
-            if isinstance(bl_stats, dict):
-                for v in bl_stats.values():
-                    if isinstance(v, dict) and "live" in v:
-                        backlinks_data = {
-                            "domain_rating": domain_rating,
-                            "live_backlinks": v.get("live", 0),
-                            "live_refdomains": v.get("live_refdomains", 0),
-                            "dofollow": v.get("dofollow", 0),
-                            "nofollow": v.get("nofollow", 0),
-                        }
-                        break
-        if not backlinks_data and bl_stats:
-            backlinks_data = {
-                "domain_rating": domain_rating,
-                "live_backlinks": bl_stats.get("live", 0) if isinstance(bl_stats, dict) else 0,
-                "live_refdomains": bl_stats.get("live_refdomains", 0) if isinstance(bl_stats, dict) else 0,
-                "dofollow": bl_stats.get("dofollow", 0) if isinstance(bl_stats, dict) else 0,
-                "nofollow": bl_stats.get("nofollow", 0) if isinstance(bl_stats, dict) else 0,
-            }
-        st.write(f"  ✅ Backlinks : {format_number(backlinks_data.get('live_backlinks', 0))} | Refdomains : {format_number(backlinks_data.get('live_refdomains', 0))}")
+        bl_raw = ahrefs.backlinks_stats(domain, end_date)
+        bl_data = {
+            "domain_rating": domain_rating,
+            "live_backlinks": extract_metric(bl_raw, "live"),
+            "live_refdomains": extract_metric(bl_raw, "live_refdomains"),
+            "dofollow": extract_metric(bl_raw, "dofollow"),
+            "nofollow": extract_metric(bl_raw, "nofollow"),
+        }
 
-        # Metrics history (12 mois)
-        history_raw = ahrefs.get_metrics_history(domain, history_start, end_date)
+        hist_raw = ahrefs.metrics_history(domain, history_start, end_date)
         traffic_history = []
-        if history_raw:
-            rows = AhrefsAPI._rows(history_raw)
-            for row in rows:
-                traffic_history.append({
-                    "date": row.get("date", "")[:7],
-                    "traffic": row.get("org_traffic", 0) or 0,
-                    "keywords": row.get("org_keywords", 0) or 0,
-                    "cost": row.get("org_cost", 0) or 0,
-                })
+        for row in AhrefsAPI._rows(hist_raw):
+            traffic_history.append({
+                "date": (row.get("date", "") or "")[:7],
+                "traffic": row.get("org_traffic", 0) or 0,
+                "keywords": row.get("org_keywords", 0) or 0,
+                "cost": row.get("org_cost", 0) or 0,
+            })
         st.write(f"  ✅ Historique : {len(traffic_history)} mois")
 
-        # Top pages
-        top_pages_raw = ahrefs.get_top_pages(domain, end_date, country=loc["ahrefs"], limit=15)
-        top_pages = []
-        if top_pages_raw:
-            rows = AhrefsAPI._rows(top_pages_raw)
-            for row in rows:
-                top_pages.append({
-                    "url": row.get("url", ""),
-                    "traffic": row.get("sum_traffic", 0) or 0,
-                    "top_keyword": row.get("top_keyword", ""),
-                    "position": row.get("top_keyword_best_position", 0) or 0,
-                    "keywords_count": row.get("keywords", 0) or 0,
-                })
-
+        tp_raw = ahrefs.top_pages(domain, end_date, country=loc["ahrefs"])
+        top_pages = [{
+            "url": r.get("url", ""), "traffic": r.get("sum_traffic", 0) or 0,
+            "top_keyword": r.get("top_keyword", ""),
+            "position": r.get("top_keyword_best_position", 0) or 0,
+            "keywords_count": r.get("keywords", 0) or 0,
+        } for r in AhrefsAPI._rows(tp_raw)]
         st.write(f"  ✅ Top pages : {len(top_pages)}")
 
-        # Organic keywords
-        kw_raw = ahrefs.get_organic_keywords(domain, end_date, country=loc["ahrefs"], limit=30)
-        keywords_list = []
-        if kw_raw:
-            rows = AhrefsAPI._rows(kw_raw)
-            for row in rows:
-                keywords_list.append({
-                    "keyword": row.get("keyword", ""),
-                    "volume": row.get("volume", 0) or 0,
-                    "position": row.get("best_position", 0) or 0,
-                    "position_diff": row.get("best_position_diff", 0) or 0,
-                    "traffic": row.get("sum_traffic", 0) or 0,
-                    "difficulty": row.get("keyword_difficulty", 0) or 0,
-                    "url": row.get("best_position_url", ""),
-                })
+        kw_raw = ahrefs.organic_keywords(domain, end_date, country=loc["ahrefs"])
+        keywords_list = [{
+            "keyword": r.get("keyword", ""), "volume": r.get("volume", 0) or 0,
+            "position": r.get("best_position", 0) or 0,
+            "position_diff": r.get("best_position_diff", 0) or 0,
+            "traffic": r.get("sum_traffic", 0) or 0,
+        } for r in AhrefsAPI._rows(kw_raw)]
+        st.write(f"  ✅ Mots-clés : {len(keywords_list)}")
 
-        st.write(f"  ✅ Mots-clés récupérés : {len(keywords_list)}")
-
-        # ── Phase 2 : GSC ──
+        # ── GSC ──
         st.write("📈 **Phase 2** — Google Search Console...")
-
         gsc = GSCAPI()
         gsc_report = {"available": False}
-
-        if gsc.is_configured and gsc_property:
-            # Current period
-            gsc_current_raw = gsc.performance_totals(gsc_property, start_date, end_date)
-            gsc_prev_raw = gsc.performance_totals(gsc_property, prev_start, prev_end)
-            gsc_queries_raw = gsc.search_analytics(gsc_property, ["query"], start_date, end_date, row_limit=20)
-
-            if gsc_current_raw:
-                gsc_report = {
-                    "available": True,
-                    "current": gsc_current_raw,
-                    "previous": gsc_prev_raw or {},
-                    "top_queries": gsc_queries_raw or [],
-                }
-                st.write(f"  ✅ GSC connecté — Clics : {format_number(gsc_current_raw.get('clicks', 0))}")
+        if gsc.ok and gsc_property:
+            cur_gsc = gsc.totals(gsc_property, start_date, end_date)
+            prev_gsc = gsc.totals(gsc_property, prev_start, prev_end)
+            queries_gsc = gsc.queries(gsc_property, start_date, end_date)
+            if cur_gsc:
+                gsc_report = {"available": True, "current": cur_gsc,
+                              "previous": prev_gsc or {}, "top_queries": queries_gsc}
+                st.write(f"  ✅ GSC — Clics : {fmt(cur_gsc.get('clicks', 0))}")
             else:
-                st.write("  ⚠️ Pas de données GSC pour cette période")
+                st.write("  ⚠️ Pas de données GSC")
         else:
-            st.write("  ℹ️ GSC non configuré — section ignorée")
+            st.write("  ℹ️ GSC non configuré")
 
-        # ── Phase 3 : Recommandations Claude ──
-        st.write("🧠 **Phase 3** — Synthèse et recommandations (Claude)...")
-
-        top_pages_summary = "\n".join([
-            f"- {p['url'][:60]} — trafic: {p['traffic']}, KW: {p['top_keyword']} (pos {p['position']})"
-            for p in top_pages[:10]
-        ]) if top_pages else "Non disponible"
-
-        kw_movements = []
-        for kw in keywords_list[:15]:
-            diff = kw.get("position_diff", 0) or 0
-            arrow = f"↑{diff}" if diff > 0 else f"↓{abs(diff)}" if diff < 0 else "="
-            kw_movements.append(f"- {kw['keyword']} (vol:{kw['volume']}, pos:{kw['position']}, mvt:{arrow})")
-        keywords_summary = "\n".join(kw_movements) if kw_movements else "Non disponible"
-
-        recommendations_input = {
-            "client_name": client_display_name,
-            "domain": domain,
-            "current_traffic": format_number(current_traffic),
-            "traffic_delta": traffic_delta,
-            "current_keywords": format_number(current_keywords),
-            "keywords_delta": keywords_delta,
-            "domain_rating": domain_rating,
-            "refdomains": format_number(backlinks_data.get("live_refdomains", 0)),
-            "top_pages_summary": top_pages_summary,
-            "keywords_summary": keywords_summary,
-            "gsc_clicks": format_number(gsc_report.get("current", {}).get("clicks", 0)) if gsc_report["available"] else "N/A",
-            "gsc_impressions": format_number(gsc_report.get("current", {}).get("impressions", 0)) if gsc_report["available"] else "N/A",
-            "gsc_ctr": f"{gsc_report.get('current', {}).get('ctr', 0) * 100:.1f}%" if gsc_report["available"] else "N/A",
-            "gsc_position": f"{gsc_report.get('current', {}).get('position', 0):.1f}" if gsc_report["available"] else "N/A",
-        }
+        # ── Claude ──
+        st.write("🧠 **Phase 3** — Recommandations Claude...")
+        tp_summary = "\n".join([
+            f"- {p['url'][:55]} — trafic:{p['traffic']}, KW:{p['top_keyword']} (pos {p['position']})"
+            for p in top_pages[:8]
+        ]) or "N/A"
+        kw_summary = "\n".join([
+            f"- {k['keyword']} vol:{k['volume']} pos:{k['position']} mvt:{'↑' + str(k['position_diff']) if k.get('position_diff', 0) > 0 else '↓' + str(abs(k.get('position_diff', 0))) if k.get('position_diff', 0) < 0 else '='}"
+            for k in keywords_list[:12]
+        ]) or "N/A"
 
         try:
-            recommendations = generate_recommendations(anthropic_key, recommendations_input)
+            reco = generate_recommendations(anthropic_key, {
+                "client_name": client_display_name, "domain": domain,
+                "current_traffic": fmt(current_traffic), "traffic_delta": traffic_delta,
+                "current_keywords": fmt(current_keywords), "keywords_delta": kw_delta,
+                "domain_rating": domain_rating, "refdomains": fmt(bl_data["live_refdomains"]),
+                "top_pages_summary": tp_summary, "keywords_summary": kw_summary,
+                "gsc_clicks": fmt(gsc_report.get("current", {}).get("clicks", 0)) if gsc_report["available"] else "N/A",
+                "gsc_impressions": fmt(gsc_report.get("current", {}).get("impressions", 0)) if gsc_report["available"] else "N/A",
+                "gsc_ctr": f"{gsc_report.get('current', {}).get('ctr', 0) * 100:.1f}%" if gsc_report["available"] else "N/A",
+                "gsc_position": f"{gsc_report.get('current', {}).get('position', 0):.1f}" if gsc_report["available"] else "N/A",
+            })
             st.write("  ✅ Recommandations générées")
         except Exception as e:
-            recommendations = f"Erreur lors de la génération : {e}"
+            reco = ""
             st.write(f"  ⚠️ Erreur Claude : {e}")
 
-        # ── Assemblage du rapport ──
-        st.write("📝 **Phase 4** — Assemblage du rapport .docx...")
+        # ── Assemblage PPTX ──
+        st.write("🎨 **Phase 4** — Génération du deck Uplix...")
 
-        kpis = {
-            "Trafic organique": {
-                "current": format_number(current_traffic),
-                "previous": format_number(prev_traffic),
-                "delta": traffic_delta,
-            },
-            "Mots-clés organiques": {
-                "current": format_number(current_keywords),
-                "previous": format_number(prev_keywords),
-                "delta": keywords_delta,
-            },
-            "Domain Rating": {
-                "current": domain_rating or "N/A",
-                "previous": "—",
-                "delta": "—",
-            },
-            "Domaines référents": {
-                "current": format_number(backlinks_data.get("live_refdomains", 0)),
-                "previous": "—",
-                "delta": "—",
-            },
-        }
+        t_color = UPLIX_GREEN if t_dir == "up" else UPLIX_RED if t_dir == "down" else UPLIX_BLACK
+        k_color = UPLIX_GREEN if k_dir == "up" else UPLIX_RED if k_dir == "down" else UPLIX_BLACK
 
-        if gsc_report["available"]:
-            gsc_cur = gsc_report.get("current", {})
-            gsc_prev = gsc_report.get("previous", {})
-            clicks_d, _ = delta_str(gsc_cur.get("clicks", 0), gsc_prev.get("clicks", 0))
-            impr_d, _ = delta_str(gsc_cur.get("impressions", 0), gsc_prev.get("impressions", 0))
-            kpis["Clics GSC"] = {
-                "current": format_number(gsc_cur.get("clicks", 0)),
-                "previous": format_number(gsc_prev.get("clicks", 0)),
-                "delta": clicks_d,
-            }
-            kpis["Impressions GSC"] = {
-                "current": format_number(gsc_cur.get("impressions", 0)),
-                "previous": format_number(gsc_prev.get("impressions", 0)),
-                "delta": impr_d,
-            }
+        kpis_list = [
+            ("Trafic organique", fmt(current_traffic), traffic_delta, t_color),
+            ("Mots-clés", fmt(current_keywords), kw_delta, k_color),
+            ("Domain Rating", str(domain_rating or "N/A"), "", UPLIX_BLUE),
+            ("Domaines référents", fmt(bl_data["live_refdomains"]), "", UPLIX_TEAL),
+        ]
 
         full_report = {
-            "client_name": client_display_name,
-            "domain": domain,
-            "period": period_label,
-            "kpis": kpis,
+            "client_name": client_display_name, "domain": domain,
+            "period": period_label, "logo_bytes": logo_bytes,
+            "kpis_list": kpis_list,
             "traffic_history": traffic_history,
-            "top_pages": top_pages,
-            "keywords": keywords_list,
-            "backlinks": backlinks_data,
-            "gsc": gsc_report,
-            "recommendations": recommendations,
+            "top_pages": top_pages, "keywords": keywords_list,
+            "backlinks": bl_data, "gsc": gsc_report,
+            "recommendations": reco,
         }
 
-        docx_buffer = create_report_docx(full_report)
+        pptx_buf = generate_report_pptx(full_report)
+        st.write(f"  ✅ Deck généré — {pptx_buf.getbuffer().nbytes / 1024:.0f} KB")
 
-        status.update(label="Rapport généré !", state="complete", expanded=False)
+        status.update(label="Bilan généré !", state="complete", expanded=False)
 
-    # =====================================================================
-    # PREVIEW DU RAPPORT
-    # =====================================================================
+    # ── Preview ──
     st.divider()
+    st.markdown('<div class="section-title">📋 Aperçu du bilan</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="section-title">📋 Aperçu du rapport</div>', unsafe_allow_html=True)
-
-    # KPIs
-    kpi_cols = st.columns(len(kpis))
-    for i, (label, data) in enumerate(kpis.items()):
+    kpi_cols = st.columns(4)
+    for i, (label, value, delta, _) in enumerate(kpis_list):
         with kpi_cols[i]:
-            delta_val = data["delta"]
-            st.metric(label, data["current"], delta=delta_val if delta_val not in ("N/A", "—") else None)
+            st.metric(label, value, delta=delta if delta and delta != "N/A" else None)
 
-    st.divider()
-
-    # Graphique d'évolution trafic
     if traffic_history:
-        st.subheader("📈 Évolution du trafic organique (12 mois)")
-        df_hist = pd.DataFrame(traffic_history)
+        st.subheader("📈 Trafic organique (12 mois)")
+        df_h = pd.DataFrame(traffic_history)
         fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=df_hist["date"], y=df_hist["traffic"],
-            mode="lines+markers", name="Trafic",
-            line=dict(color="#667eea", width=3),
-            fill="tozeroy", fillcolor="rgba(102, 126, 234, 0.1)"
-        ))
-        fig.update_layout(
-            height=350,
-            margin=dict(t=20, b=40, l=60, r=20),
-            xaxis_title="Mois", yaxis_title="Trafic organique estimé",
-        )
+        fig.add_trace(go.Scatter(x=df_h["date"], y=df_h["traffic"], mode="lines+markers",
+                                 line=dict(color=CHART_BLUE, width=3), fill="tozeroy",
+                                 fillcolor="rgba(66,133,244,0.1)"))
+        fig.update_layout(height=300, margin=dict(t=20, b=40, l=60, r=20))
         st.plotly_chart(fig, use_container_width=True)
 
-    # Top pages
     if top_pages:
         st.subheader("🏆 Top pages")
         df_tp = pd.DataFrame(top_pages[:10])[["url", "traffic", "top_keyword", "position"]]
         df_tp.columns = ["URL", "Trafic", "Top mot-clé", "Position"]
         st.dataframe(df_tp, use_container_width=True, hide_index=True)
 
-    # Keywords
-    if keywords_list:
-        st.subheader("🔑 Mots-clés principaux")
-        df_kw = pd.DataFrame(keywords_list[:15])
-        df_kw["mouvement"] = df_kw["position_diff"].apply(
-            lambda d: f"↑ +{d}" if d and d > 0 else f"↓ {d}" if d and d < 0 else "="
-        )
-        df_display = df_kw[["keyword", "volume", "position", "mouvement", "traffic"]].copy()
-        df_display.columns = ["Mot-clé", "Volume", "Position", "Mouvement", "Trafic"]
-        st.dataframe(df_display, use_container_width=True, hide_index=True)
-
-    # Recommandations
-    if recommendations:
+    if reco:
         st.subheader("💡 Recommandations")
-        st.markdown(recommendations)
+        st.markdown(reco)
 
     st.divider()
 
-    # ── Download ──
-    filename = f"rapport_seo_{domain.replace('.', '_')}_{datetime.now().strftime('%Y%m')}.docx"
+    filename = f"bilan_seo_{domain.replace('.', '_')}_{datetime.now().strftime('%Y%m')}.pptx"
     st.download_button(
-        "📥 Télécharger le rapport .docx",
-        data=docx_buffer,
+        "📥 Télécharger le bilan .pptx",
+        data=pptx_buf,
         file_name=filename,
-        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
         type="primary",
         use_container_width=True,
     )
-
-    st.caption(f"Rapport généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}")
+    st.caption(f"Bilan généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')} | Importable dans Google Slides")
 
 st.caption("📊 Rapport Client Automatisé | Ma Toolbox SEO")
