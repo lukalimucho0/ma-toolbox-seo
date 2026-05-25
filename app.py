@@ -98,6 +98,17 @@ with col7:
     - Téléchargement PNG direct
     """)
 
+with col8:
+    st.markdown("""
+    ### 🗺️ Topical Authority Map
+    **Cartographie d'autorité thématique**
+
+    - Clustering sémantique des mots-clés par Claude
+    - Treemap visuel de la couverture topique
+    - Analyse gaps vs concurrents
+    - Plan d'action priorisé + Export CSV
+    """)
+
 st.markdown("*👉 Accède aux outils via la **sidebar** à gauche*")
 
 st.divider()
