@@ -109,6 +109,19 @@ with col8:
     - Plan d'action priorisé + Export CSV
     """)
 
+col9, col10 = st.columns(2)
+
+with col9:
+    st.markdown("""
+    ### 📊 Rapport Client Automatisé
+    **Rapport SEO mensuel en un clic**
+
+    - Ahrefs + GSC + Claude combinés
+    - KPIs, trafic, top pages, mots-clés, backlinks
+    - Recommandations IA personnalisées
+    - Export .docx prêt à envoyer
+    """)
+
 st.markdown("*👉 Accède aux outils via la **sidebar** à gauche*")
 
 st.divider()
