@@ -109,18 +109,6 @@ with col8:
     - Plan d'action priorisé + Export CSV
     """)
 
-col9, col10 = st.columns(2)
-
-with col9:
-    st.markdown("""
-    ### 📊 Bilan Client Automatisé
-    **Deck SEO mensuel .pptx Uplix**
-
-    - Ahrefs + GSC + Claude combinés
-    - KPIs, graphiques, top pages, mots-clés
-    - DA Uplix (Poppins, couleurs, layout)
-    - Export .pptx importable Google Slides
-    """)
 
 st.markdown("*👉 Accède aux outils via la **sidebar** à gauche*")
 
