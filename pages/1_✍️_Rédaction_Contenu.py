@@ -832,11 +832,12 @@ Règle de filtration : si un lecteur qui a tapé « {keyword} » peut se passer 
 
 ## CONTRAINTES DE TAILLE (OBLIGATOIRES)
 
-- **4 à 8 H2 maximum** (proportionnel à la complexité du sujet)
-- **2 à 4 H3 par H2 maximum**
-- **H4** : uniquement si un H3 a réellement besoin d'être subdivisé (rare)
-- **15 à 25 headings au total maximum** (H1 compris)
+- **3 à 6 H2 maximum** (vise le bas de la fourchette ; ne gonfle pas la structure)
+- **1 à 3 H3 par H2 maximum**
+- **H4** : à éviter (seulement si réellement indispensable)
+- **10 à 16 headings au total maximum** (H1 compris)
 - Chaque heading doit passer le test : « L'utilisateur qui a tapé {keyword} a-t-il BESOIN de cette info pour obtenir sa réponse ? »
+- **Règle anti-dérive** : si une sous-thématique pourrait constituer un article autonome (une aide précise, un produit ou sujet voisin, une question connexe qui a sa propre intention de recherche), NE LA DÉVELOPPE PAS ici. Évoque-la en une phrase et renvoie vers un lien interne. On reste strictement sur l'intention de « {keyword} ».
 
 ## RÈGLES POUR LA STRUCTURE Hn
 
@@ -878,7 +879,7 @@ H2: [Deuxième pilier thématique essentiel]
   H3: [Sous-thématique concrète]
   H3: [Sous-thématique concrète]
 
-[etc. — 4 à 8 H2 max, 15-25 headings total max]
+[etc. — 3 à 6 H2 max, 10-16 headings total max]
 """
 
     @staticmethod

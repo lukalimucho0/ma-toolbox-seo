@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import re
 
-from .wordpress import md_to_html, slugify, strip_em_dash, CATEGORIES
+from .wordpress import md_to_html, slugify, strip_em_dash, CATEGORIES, dedupe_md_links
 from .gold import tldr as g_tldr, faq as g_faq, sources as g_sources, assemble
 from . import infographies as ig
 
@@ -104,7 +104,10 @@ def _build_infographic(spec: dict) -> str:
 
 def build_gold_html(article_md: str, enrich: dict) -> str:
     """Assemble le HTML gold final (TL;DR + corps + infographie + FAQ + sources)."""
+    article_md = dedupe_md_links(article_md or "")
     body = md_to_html(article_md) if article_md.strip() else ""
+    # Le H1 est déjà rendu par le template d'article : on le retire du contenu.
+    body = re.sub(r"(?is)<h1\b[^>]*>.*?</h1>\s*", "", body)
     info = _build_infographic(enrich.get("infographic", {}))
     if info and "</h2>" in body:
         i = body.find("</h2>") + 5

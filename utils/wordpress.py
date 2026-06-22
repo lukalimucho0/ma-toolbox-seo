@@ -43,6 +43,21 @@ def count_em_dash(text: str) -> int:
     return text.count("—") + text.count("–")
 
 
+def dedupe_md_links(md: str) -> str:
+    """1 URL = 1 lien : garde la première occurrence de chaque lien markdown,
+    délie les suivantes (remplace [ancre](url) par l'ancre seule)."""
+    seen = set()
+
+    def repl(m):
+        text, url = m.group(1), m.group(2)
+        if url in seen:
+            return text
+        seen.add(url)
+        return m.group(0)
+
+    return re.sub(r"\[([^\]]+)\]\((\S+?)\)", repl, md or "")
+
+
 def md_to_html(md: str) -> str:
     """Convertit le markdown de l'outil de rédaction en HTML (compatible .prose).
 

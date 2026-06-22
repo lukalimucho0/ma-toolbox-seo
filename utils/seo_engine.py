@@ -45,9 +45,11 @@ HeadingNode = _mod.HeadingNode
 
 def nodes_to_markdown(nodes) -> str:
     """Reconstruit le markdown complet à partir des HeadingNode rédigés."""
-    lvl = {1: "#", 2: "##", 3: "###", 4: "####"}
+    lvl = {2: "##", 3: "###", 4: "####"}
     out = []
     for n in nodes:
+        if getattr(n, "level", 2) == 1:
+            continue  # le H1 est rendu par le template d'article, pas dans le contenu
         out.append(f"{lvl.get(n.level, '####')} {n.text}\n")
         if getattr(n, "content", ""):
             out.append(n.content + "\n")
