@@ -21,11 +21,33 @@ check_password()
 st.title("🚀 Publication WordPress")
 st.caption("Pousse un article mis en forme (gold standard) sur conso-energie.fr. Statut brouillon par défaut.")
 
-WP_URL = st.secrets.get("WP_INGEST_URL", "")
-WP_TOKEN = st.secrets.get("WP_INGEST_TOKEN", "")
+def _secret(key):
+    """Lit une clé au niveau racine, ou dans une éventuelle section (TOML mal placé)."""
+    v = st.secrets.get(key, "")
+    if v:
+        return v
+    for val in st.secrets.values():
+        try:
+            if isinstance(val, dict) and val.get(key):
+                return val.get(key)
+        except Exception:
+            pass
+    return ""
+
+
+WP_URL = _secret("WP_INGEST_URL")
+WP_TOKEN = _secret("WP_INGEST_TOKEN")
 if not WP_URL or not WP_TOKEN:
-    st.error("Secrets manquants : ajoute WP_INGEST_URL et WP_INGEST_TOKEN dans les paramètres de l'app.")
-    st.stop()
+    with st.expander("⚙️ Connexion WordPress à configurer", expanded=True):
+        st.warning(
+            "Secrets WP_INGEST_URL / WP_INGEST_TOKEN introuvables. Sur Streamlit Cloud, "
+            "place ces deux lignes **tout en haut** des secrets (avant toute section `[entre crochets]`), "
+            "clique sur Save puis redémarre l'app. Tu peux aussi les saisir ici pour cette session."
+        )
+        WP_URL = st.text_input("WP_INGEST_URL", value=WP_URL or "https://www.conso-energie.fr/wp-json/conso-energie/v1/article")
+        WP_TOKEN = st.text_input("WP_INGEST_TOKEN", value=WP_TOKEN, type="password")
+    if not WP_URL or not WP_TOKEN:
+        st.stop()
 
 
 # ---------- Pré-remplissage depuis la page Rédaction ----------
