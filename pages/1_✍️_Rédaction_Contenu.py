@@ -2223,4 +2223,6 @@ def _display_article_and_exports(article_content, target_keyword, title_result, 
                 st.error(str(e))
 
 
-main()
+import sys as _sys
+if not getattr(_sys, "_CE_ENGINE_IMPORT", False):
+    main()
