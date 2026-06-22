@@ -99,6 +99,7 @@ keyword = st.text_input("Mot-clé cible", placeholder="Ex. comment entretenir un
 go = st.button("🚀 Lancer la génération complète", type="primary", disabled=not keyword.strip())
 
 if go:
+    st.session_state.pop("pce", None)  # repart d'un état propre à chaque lancement
     try:
         gen = SEOBriefGenerator()
         gen.setup_apis(DFS_USER, DFS_PASS, "claude", model, ANTHROPIC_KEY)

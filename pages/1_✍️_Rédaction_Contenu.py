@@ -1416,6 +1416,16 @@ def run_writing_engine(
     """Moteur de rédaction : rédige chaque heading un par un"""
 
     full_structure_text = HeadingParser.nodes_to_text(nodes)
+    # Anti-doublon : retire les headings répétés (même niveau + même texte normalisé)
+    _seen_h, _uniq = set(), []
+    for _n in nodes:
+        _k = (_n.level, re.sub(r"\s+", " ", _n.text.strip().lower()))
+        if _n.level >= 2 and _k in _seen_h:
+            continue
+        _seen_h.add(_k)
+        _uniq.append(_n)
+    nodes = _uniq
+    full_structure_text = HeadingParser.nodes_to_text(nodes)
     content_written = []
     previous_summary = ""
     already_linked_urls = set()  # Tracking des URLs déjà maillées

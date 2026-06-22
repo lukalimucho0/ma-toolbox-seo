@@ -32,19 +32,20 @@ Schéma JSON attendu :
   "slug": "slug-seo-court",
   "category": "une valeur parmi : {cats}",
   "sources": ["Source 1", "Source 2"],
-  "infographic": {{
-     "type": "barres | etapes | timeline | comparatif | cartes | echelle_dpe | aucune",
+  "infographics": [
+    {{
+     "type": "barres | etapes | timeline | comparatif | cartes | echelle_dpe",
      "title": "Titre court de l'infographie",
      "caption": "Légende sous l'infographie",
-     // selon le type :
      "rows": [["Label", 8.5, "R 8,5"]],          // barres : [label, valeur_num, affichage]
      "steps": [["Titre étape", "sous-texte"]],    // etapes
      "nodes": [["G", "Depuis 2025"]],             // timeline : [label, sous-label]
      "cards": [["0 %", "d'intérêts"]],            // cartes : [grand, petit]
      "left_title": "", "right_title": "", "left": [], "right": []  // comparatif
-  }}
+    }}
+  ]
 }}
-Choisis le type d'infographie le plus pertinent pour ce sujet (ou "aucune" si rien ne s'y prête).
+Propose 0 à 2 infographies VRAIMENT pertinentes (liste vide si rien ne s'y prête), chacune sur une donnée DIFFÉRENTE de l'article et adaptée à une section distincte. N'utilise que des chiffres présents dans l'article.
 
 ARTICLE :
 {article}
@@ -68,7 +69,9 @@ def enrich_to_gold(ai_analyzer, keyword: str, article_md: str) -> dict:
     data.setdefault("tldr", "")
     data.setdefault("faq", [])
     data.setdefault("sources", [])
-    data.setdefault("infographic", {"type": "aucune"})
+    if not isinstance(data.get("infographics"), list):
+        one = data.get("infographic")
+        data["infographics"] = [one] if isinstance(one, dict) else []
     if data.get("category") not in CATEGORIES:
         data["category"] = ""
     if not data.get("slug"):
@@ -102,18 +105,33 @@ def _build_infographic(spec: dict) -> str:
     return ""
 
 
+def _insert_infographics(body: str, figs: list) -> str:
+    """Insère chaque infographie après un H2 distinct (fig 1 après le 1er H2, etc.)."""
+    positions = [m.end() for m in re.finditer(r"</h2>", body)]
+    if not positions:
+        return "".join(figs) + body
+    n = min(len(figs), len(positions))
+    out = body
+    for pos, fig in sorted(zip(positions[:n], figs[:n]), key=lambda x: -x[0]):
+        out = out[:pos] + fig + out[pos:]
+    if len(figs) > n:  # surplus éventuel en fin d'article
+        out += "".join(figs[n:])
+    return out
+
+
 def build_gold_html(article_md: str, enrich: dict) -> str:
     """Assemble le HTML gold final (TL;DR + corps + infographie + FAQ + sources)."""
     article_md = dedupe_md_links(article_md or "")
     body = md_to_html(article_md) if article_md.strip() else ""
     # Le H1 est déjà rendu par le template d'article : on le retire du contenu.
     body = re.sub(r"(?is)<h1\b[^>]*>.*?</h1>\s*", "", body)
-    info = _build_infographic(enrich.get("infographic", {}))
-    if info and "</h2>" in body:
-        i = body.find("</h2>") + 5
-        body = body[:i] + info + body[i:]
-    elif info:
-        body = info + body
+    specs = enrich.get("infographics")
+    if not isinstance(specs, list):
+        one = enrich.get("infographic")
+        specs = [one] if isinstance(one, dict) else []
+    figs = [h for h in (_build_infographic(s) for s in specs) if h]
+    if figs:
+        body = _insert_infographics(body, figs)
     faq_items = [(f.get("q", ""), f.get("a", "")) for f in enrich.get("faq", []) if isinstance(f, dict)]
     return assemble(
         g_tldr(enrich["tldr"]) if enrich.get("tldr") else "",
