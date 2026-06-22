@@ -18,6 +18,7 @@ from utils.seo_engine import (
 )
 from utils.gold_enrich import enrich_to_gold, build_gold_html
 from utils.wordpress import push_article, slugify, CATEGORIES, count_em_dash
+from utils.maillage_conso import maillage_block
 
 st.set_page_config(page_title="Post Conso Energie", page_icon="📝", layout="wide")
 check_password()
@@ -76,12 +77,9 @@ with st.sidebar:
     ])
     num_results = st.slider("Résultats SERP analysés", 5, 15, 10)
     cat_force = st.selectbox("Catégorie (laisser auto si possible)", ["(auto)"] + CATEGORIES)
-    st.markdown("**Liens internes proposés au maillage**")
-    liens = st.text_area("Un par ligne : url | ancre", height=150, value=(
-        "/chauffage/ | chauffage\n/isolation/ | isolation\n/climatisation/ | climatisation\n"
-        "/chauffe-eau/ | chauffe-eau\n/aides/maprimerenov/ | MaPrimeRénov'\n"
-        "/simulateur-renovation/ | simulateur de rénovation"
-    ))
+    st.markdown("**Réservoir de maillage interne**")
+    st.caption("L'outil pioche dans cette liste l'ancre pertinente selon le contenu (1 lien par ancre maximum). Format : url | ancre.")
+    liens = st.text_area("url | ancre (une par ligne)", height=220, value=maillage_block())
 
 
 def _liens_formatted(txt):
@@ -106,7 +104,7 @@ if go:
         gen.setup_apis(DFS_USER, DFS_PASS, "claude", model, ANTHROPIC_KEY)
         country, language = "🇫🇷 France", "Français"
         language_code = DataForSEOConfig.get_market_config(country, language)["language_code"]
-        ilf = _liens_formatted(liens)
+        ilf = (liens or "").strip()
 
         with st.status("Génération en cours...", expanded=True) as status:
             st.write("🔍 1/6 Recherche SERP et extraction des concurrents...")

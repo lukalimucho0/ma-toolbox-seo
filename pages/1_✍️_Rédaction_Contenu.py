@@ -978,10 +978,12 @@ Tu DOIS respecter le ton, le vocabulaire et les contraintes décrits dans ce bri
 
 Tu as accès au SITEMAP COMPLET du site client. Ta mission est de sélectionner les pages les plus pertinentes à mailler dans cette section.
 
+Chaque page est listée au format `url | ancre conseillée`.
+
 PROCESSUS DE SÉLECTION :
 1. Lis la liste des pages disponibles ci-dessous
 2. Identifie les pages dont le sujet est EN RAPPORT DIRECT avec le contenu de cette section
-3. Crée une ancre en mot-clé exact et descriptif pour chaque page sélectionnée
+3. Utilise l'ANCRE CONSEILLÉE fournie (après le séparateur |) comme texte du lien, ou une variante très proche qui s'intègre naturellement dans la phrase
 4. Intègre le lien au format markdown [ancre](url) de manière naturelle dans le texte
 
 RÈGLES STRICTES :
