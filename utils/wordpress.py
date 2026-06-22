@@ -1,0 +1,147 @@
+"""
+Client de publication vers WordPress (conso-energie.fr).
+
+Pousse un article sur l'endpoint d'ingestion custom du thème
+(/wp-json/conso-energie/v1/article) : le HTML est encodé en base64 pour
+franchir le WAF d'o2switch, l'auth se fait par token (en-tête X-CE-Token).
+
+Utilisation :
+    from utils.wordpress import push_article, md_to_html, strip_em_dash
+    res = push_article(url, token, title="...", content_html="...",
+                       category="chauffage", excerpt="...", status="draft")
+"""
+
+from __future__ import annotations
+
+import base64
+import re
+import unicodedata
+import requests
+
+# Catégories disponibles côté WordPress (slugs).
+CATEGORIES = [
+    "film-solaire", "climatisation", "isolation", "chauffage",
+    "chauffe-eau", "diagnostics", "aides",
+]
+
+
+def slugify(text: str) -> str:
+    """Slug SEO simple, sans accents."""
+    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+    text = re.sub(r"[^a-zA-Z0-9]+", "-", text).strip("-").lower()
+    return re.sub(r"-{2,}", "-", text)[:80]
+
+
+def strip_em_dash(text: str) -> str:
+    """Supprime les tirets cadratins/demi-cadratins (règle stricte du projet)."""
+    text = text.replace(" — ", " : ").replace(" – ", " : ")
+    text = text.replace("—", "-").replace("–", "-")
+    return text
+
+
+def count_em_dash(text: str) -> int:
+    return text.count("—") + text.count("–")
+
+
+def md_to_html(md: str) -> str:
+    """Convertit le markdown de l'outil de rédaction en HTML (compatible .prose).
+
+    Nécessite le paquet `markdown` (ajouté au requirements). Repli minimal si absent.
+    """
+    md = strip_em_dash(md)
+    try:
+        import markdown as _md
+        html = _md.markdown(
+            md,
+            extensions=["tables", "sane_lists", "fenced_code", "nl2br"],
+            output_format="html5",
+        )
+        return html
+    except Exception:
+        # Repli très basique (titres, gras, liens, paragraphes).
+        out = []
+        for block in md.split("\n\n"):
+            b = block.strip()
+            if not b:
+                continue
+            if b.startswith("### "):
+                out.append(f"<h3>{b[4:].strip()}</h3>")
+            elif b.startswith("## "):
+                out.append(f"<h2>{b[3:].strip()}</h2>")
+            else:
+                b = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", b)
+                b = re.sub(r"\[(.+?)\]\((.+?)\)", r'<a href="\2">\1</a>', b)
+                out.append(f"<p>{b}</p>")
+        return "\n".join(out)
+
+
+def push_article(
+    url: str,
+    token: str,
+    title: str,
+    content_html: str,
+    category: str = "",
+    excerpt: str = "",
+    slug: str = "",
+    status: str = "draft",
+    metadesc: str = "",
+    overwrite: bool = False,
+    post_type: str = "post",
+    timeout: int = 30,
+) -> dict:
+    """Pousse l'article. Retourne un dict {ok, id, slug, status, link, ...}.
+
+    Lève une RuntimeError avec un message clair en cas d'échec.
+    """
+    if not url or not token:
+        raise RuntimeError("URL ou token d'ingestion manquant (vérifie les secrets Streamlit).")
+    if not title.strip():
+        raise RuntimeError("Le titre est obligatoire.")
+    if not content_html.strip():
+        raise RuntimeError("Le contenu est vide.")
+
+    content_html = strip_em_dash(content_html)
+    payload = {
+        "title": strip_em_dash(title),
+        "slug": slug or slugify(title),
+        "category": category,
+        "excerpt": strip_em_dash(excerpt),
+        "content_b64": base64.b64encode(content_html.encode("utf-8")).decode("ascii"),
+        "status": status,
+        "metadesc": strip_em_dash(metadesc),
+        "overwrite": bool(overwrite),
+        "post_type": post_type,
+    }
+    try:
+        r = requests.post(
+            url,
+            json=payload,
+            headers={
+                "X-CE-Token": token,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                # UA neutre : le WAF o2switch bloque le User-Agent par défaut de requests.
+                "User-Agent": "Mozilla/5.0 (compatible; ConsoEnergieToolbox/1.0)",
+            },
+            timeout=timeout,
+        )
+    except requests.RequestException as e:
+        raise RuntimeError(f"Connexion impossible à WordPress : {e}")
+
+    try:
+        body = r.json()
+    except ValueError:
+        body = {}
+
+    if r.status_code in (200, 201) and body.get("ok"):
+        return body
+
+    if r.status_code == 409:
+        raise RuntimeError(
+            "Un article existe déjà avec ce slug. Coche « Écraser » pour le mettre à jour "
+            f"(id existant : {body.get('id')})."
+        )
+    if r.status_code == 401:
+        raise RuntimeError("Token refusé (401). Vérifie WP_INGEST_TOKEN dans les secrets.")
+    msg = body.get("message") or r.text[:300] or f"HTTP {r.status_code}"
+    raise RuntimeError(f"Échec de publication ({r.status_code}) : {msg}")
