@@ -29,6 +29,32 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import xml.etree.ElementTree as ET
 import glob as glob_module
+import streamlit.components.v1 as components
+
+# Publication WordPress (version gold)
+from utils.wordpress import push_article, slugify, CATEGORIES
+from utils.gold_enrich import enrich_to_gold, build_gold_html
+
+_PREVIEW_CSS = (
+    "<style>.cep{font-family:system-ui;max-width:720px}.cep .tldr{background:#f3f3ff;border-left:4px solid #000091;"
+    "padding:12px 16px;border-radius:4px}.cep h2{color:#000091}.cep .infographie{border:1px solid #dcdce6;border-radius:6px;padding:12px}"
+    ".cep table{border-collapse:collapse;width:100%}.cep th{background:#000091;color:#fff;padding:6px}.cep td{border-bottom:1px solid #dcdce6;padding:6px}"
+    ".cep details{border:1px solid #dcdce6;border-radius:4px;margin-bottom:6px;padding:8px}.cep .sources{font-size:.85rem;color:#525275}</style>"
+)
+
+
+def _ce_secret(key):
+    """Lit une clé de secret au niveau racine ou dans une section (TOML mal placé)."""
+    v = st.secrets.get(key, "")
+    if v:
+        return v
+    for val in st.secrets.values():
+        try:
+            if isinstance(val, dict) and val.get(key):
+                return val.get(key)
+        except Exception:
+            pass
+    return ""
 
 
 # Configuration du logging
@@ -2143,6 +2169,58 @@ def _display_article_and_exports(article_content, target_keyword, title_result, 
             )
         except Exception as e:
             st.error(f"Erreur: {e}")
+
+    # ═══════════════════════════════════════════════════════
+    # PUBLICATION WORDPRESS (version gold)
+    # ═══════════════════════════════════════════════════════
+    st.divider()
+    st.subheader("🚀 Publier sur conso-energie.fr")
+
+    wp_url, wp_token = _ce_secret("WP_INGEST_URL"), _ce_secret("WP_INGEST_TOKEN")
+    if not wp_url or not wp_token:
+        st.info("Ajoute WP_INGEST_URL et WP_INGEST_TOKEN dans les secrets pour activer la publication directe.")
+        return
+
+    st.caption("Génère la version gold (réponse en bref, infographie, FAQ + schema) puis publie en brouillon avec toutes les métadonnées.")
+
+    if st.button("✨ Générer la version gold + métadonnées", key="gold_gen"):
+        with st.spinner("Mise en forme gold via l'IA..."):
+            try:
+                st.session_state.gold_enrich = enrich_to_gold(
+                    st.session_state.generator.ai_analyzer, target_keyword, full_markdown
+                )
+                st.session_state.gold_md = full_markdown
+            except Exception as e:
+                st.error(f"Erreur lors de l'enrichissement gold : {e}")
+
+    enrich = st.session_state.get("gold_enrich")
+    if enrich:
+        gold_html = build_gold_html(st.session_state.get("gold_md", full_markdown), enrich)
+        cg1, cg2 = st.columns([2, 1])
+        with cg2:
+            wp_titre = st.text_input("Titre", value=(title_result or target_keyword).strip(), key="wp_titre")
+            wp_slug = st.text_input("Slug", value=enrich.get("slug") or slugify(wp_titre), key="wp_slug")
+            default_cat = enrich.get("category") if enrich.get("category") in CATEGORIES else CATEGORIES[0]
+            wp_cat = st.selectbox("Catégorie", CATEGORIES, index=CATEGORIES.index(default_cat), key="wp_cat")
+            wp_meta = st.text_area("Meta description", value=enrich.get("metadesc") or meta_result or "", height=90, key="wp_meta")
+            wp_status = st.radio("Statut", ["draft", "publish"], horizontal=True, key="wp_status",
+                                 format_func=lambda s: "Brouillon" if s == "draft" else "En ligne")
+            wp_overwrite = st.checkbox("Écraser si le slug existe", key="wp_overwrite")
+        with cg1:
+            components.html(_PREVIEW_CSS + "<div class='cep'>" + gold_html + "</div>", height=480, scrolling=True)
+
+        if st.button("🚀 Publier en brouillon sur WordPress", type="primary", key="wp_push"):
+            try:
+                res = push_article(
+                    wp_url, wp_token, title=wp_titre, content_html=gold_html,
+                    category=wp_cat, excerpt=wp_meta, slug=wp_slug, status=wp_status,
+                    metadesc=wp_meta, overwrite=wp_overwrite,
+                )
+                verbe = "mis à jour" if res.get("updated") else "créé"
+                st.success(f"✅ Article {verbe} ({res.get('status')}) sur WordPress, id {res.get('id')}")
+                st.markdown(f"[Voir l'article →]({res.get('link')})")
+            except RuntimeError as e:
+                st.error(str(e))
 
 
 main()
