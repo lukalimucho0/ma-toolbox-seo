@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import base64
 import re
+import time
 import unicodedata
 import requests
 
@@ -127,21 +128,34 @@ def push_article(
         "overwrite": bool(overwrite),
         "post_type": post_type,
     }
-    try:
-        r = requests.post(
-            url,
-            json=payload,
-            headers={
-                "X-CE-Token": token,
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                # UA neutre : le WAF o2switch bloque le User-Agent par défaut de requests.
-                "User-Agent": "Mozilla/5.0 (compatible; ConsoEnergieToolbox/1.0)",
-            },
-            timeout=timeout,
+    headers = {
+        "X-CE-Token": token,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        # UA neutre : le WAF o2switch bloque le User-Agent par défaut de requests.
+        "User-Agent": "Mozilla/5.0 (compatible; ConsoEnergieToolbox/1.0)",
+    }
+    # Retry sur erreurs serveur transitoires de l'hébergement mutualisé (502/503/504, timeouts).
+    r = None
+    last_err = ""
+    for attempt in range(3):
+        try:
+            r = requests.post(url, json=payload, headers=headers, timeout=timeout)
+        except requests.RequestException as e:
+            last_err = str(e)
+            r = None
+        if r is not None and r.status_code not in (502, 503, 504):
+            break
+        last_err = last_err or (f"HTTP {r.status_code} (serveur momentanément indisponible)" if r is not None else last_err)
+        if attempt < 2:
+            time.sleep(3 * (attempt + 1))
+    if r is None:
+        raise RuntimeError(f"Connexion impossible à WordPress après plusieurs tentatives : {last_err}")
+    if r.status_code in (502, 503, 504):
+        raise RuntimeError(
+            "Le serveur WordPress est momentanément indisponible (erreur " + str(r.status_code) +
+            "). C'est transitoire sur l'hébergement mutualisé : réessaie dans quelques instants."
         )
-    except requests.RequestException as e:
-        raise RuntimeError(f"Connexion impossible à WordPress : {e}")
 
     try:
         body = r.json()
