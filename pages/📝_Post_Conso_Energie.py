@@ -71,10 +71,17 @@ if missing:
 
 with st.sidebar:
     st.subheader("Paramètres")
-    model = st.selectbox("Modèle de rédaction", [
-        "claude-sonnet-4-5-20250929", "claude-opus-4-6", "claude-haiku-4-5-20251001",
-        "claude-3-5-sonnet-20241022",
-    ])
+    MODELES = {
+        "claude-sonnet-4-6": "Sonnet 4.6 (recommandé)",
+        "claude-opus-4-8": "Opus 4.8 (le plus puissant)",
+        "claude-opus-4-7": "Opus 4.7",
+        "claude-opus-4-6": "Opus 4.6",
+        "claude-sonnet-4-5-20250929": "Sonnet 4.5",
+        "claude-haiku-4-5-20251001": "Haiku 4.5 (rapide)",
+        "claude-3-5-sonnet-20241022": "Claude 3.5 Sonnet",
+    }
+    model = st.selectbox("Modèle de rédaction", list(MODELES.keys()),
+                         format_func=lambda m: MODELES.get(m, m))
     num_results = st.slider("Résultats SERP analysés", 5, 15, 10)
     cat_force = st.selectbox("Catégorie (laisser auto si possible)", ["(auto)"] + CATEGORIES)
     st.markdown("**Réservoir de maillage interne**")

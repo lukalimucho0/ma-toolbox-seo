@@ -45,7 +45,7 @@ Schéma JSON attendu :
     }}
   ]
 }}
-Propose 0 à 2 infographies VRAIMENT pertinentes (liste vide si rien ne s'y prête), chacune sur une donnée DIFFÉRENTE de l'article et adaptée à une section distincte. N'utilise que des chiffres présents dans l'article.
+Propose 2 infographies dès que l'article contient assez de matière (chiffres, étapes, comparaisons, fourchettes) : c'est le cas le plus fréquent. Mets-en 1 si une seule donnée se prête vraiment, et une liste vide UNIQUEMENT si aucune donnée ne s'y prête. Chaque infographie porte sur une donnée DIFFÉRENTE et s'insère dans une section distincte. N'utilise que des chiffres présents dans l'article.
 
 ARTICLE :
 {article}
@@ -64,7 +64,7 @@ def _parse_json(text: str) -> dict:
 def enrich_to_gold(ai_analyzer, keyword: str, article_md: str) -> dict:
     """Appelle l'IA et renvoie le dict d'enrichissement (validé/nettoyé)."""
     prompt = PROMPT.format(kw=keyword, cats=", ".join(CATEGORIES), article=article_md[:12000])
-    raw = ai_analyzer.analyze_with_custom_prompt(prompt, max_tokens=2000, temperature=0.4)
+    raw = ai_analyzer.analyze_with_custom_prompt(prompt, max_tokens=3500, temperature=0.4)
     data = _parse_json(raw)
     data.setdefault("tldr", "")
     data.setdefault("faq", [])
