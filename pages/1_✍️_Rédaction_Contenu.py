@@ -757,11 +757,20 @@ class AIAnalyzer:
                 )
                 return response.choices[0].message.content
             elif self.ai_provider == 'claude':
-                message = self.anthropic_client.messages.create(
-                    model=self.ai_model, max_tokens=max_tokens, temperature=temperature,
-                    messages=[{"role": "user", "content": prompt}]
-                )
-                return message.content[0].text
+                for _att in range(4):
+                    try:
+                        message = self.anthropic_client.messages.create(
+                            model=self.ai_model, max_tokens=max_tokens, temperature=temperature,
+                            messages=[{"role": "user", "content": prompt}]
+                        )
+                        return message.content[0].text
+                    except Exception as _e:
+                        transient = any(s in str(_e).lower() for s in (
+                            "overloaded", "529", "429", "rate", "timeout", "502", "503", "504"))
+                        if transient and _att < 3:
+                            time.sleep(3 * (_att + 1))
+                            continue
+                        raise
             elif self.ai_provider == 'gemini':
                 model = genai.GenerativeModel(self.ai_model)
                 response = model.generate_content(

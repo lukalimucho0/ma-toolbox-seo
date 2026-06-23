@@ -78,7 +78,6 @@ with st.sidebar:
         "claude-opus-4-6": "Opus 4.6",
         "claude-sonnet-4-5-20250929": "Sonnet 4.5",
         "claude-haiku-4-5-20251001": "Haiku 4.5 (rapide)",
-        "claude-3-5-sonnet-20241022": "Claude 3.5 Sonnet",
     }
     model = st.selectbox("Modèle de rédaction", list(MODELES.keys()),
                          format_func=lambda m: MODELES.get(m, m))
@@ -132,6 +131,16 @@ if go:
                 PromptTemplates.get_structure_prompt(keyword, selected), max_tokens=3000)
             nodes = HeadingParser.parse_structure_text(structure)
             st.write(f"→ {len(nodes)} sections")
+            if not nodes or (structure or "").startswith("Erreur"):
+                status.update(label="Échec à l'étape structure", state="error")
+                st.error(
+                    "La structure est revenue vide : le modèle a probablement renvoyé une erreur "
+                    "(souvent une surcharge temporaire 529 sur Opus). Réessaie dans un instant, "
+                    "ou choisis **Sonnet 4.6** (le plus fiable)."
+                )
+                with st.expander("Réponse brute du modèle (structure)"):
+                    st.code((structure or "")[:1500])
+                st.stop()
 
             st.write("🏷️ 4/6 Title et meta description...")
             title = gen.ai_analyzer.analyze_with_custom_prompt(
