@@ -57,6 +57,15 @@ def _clean_title(raw):
     return line.strip().strip('"')
 
 
+def reset_pce(clear_keyword=False):
+    """Remet l'outil à zéro (résultat + métadonnées ; et le mot-clé si demandé)."""
+    keys = ["pce", "pce_titre", "pce_slug", "pce_cat", "pce_meta", "pce_statut", "pce_ov"]
+    if clear_keyword:
+        keys.append("pce_keyword")
+    for k in keys:
+        st.session_state.pop(k, None)
+
+
 # ---------- Secrets / config ----------
 WP_URL, WP_TOKEN = _secret("WP_INGEST_URL"), _secret("WP_INGEST_TOKEN")
 ANTHROPIC_KEY = _secret("ANTHROPIC_API_KEY")
@@ -101,11 +110,11 @@ def _liens_formatted(txt):
 
 
 # ---------- Saisie + lancement ----------
-keyword = st.text_input("Mot-clé cible", placeholder="Ex. comment entretenir une pompe à chaleur")
+keyword = st.text_input("Mot-clé cible", placeholder="Ex. comment entretenir une pompe à chaleur", key="pce_keyword")
 go = st.button("🚀 Lancer la génération complète", type="primary", disabled=not keyword.strip())
 
 if go:
-    st.session_state.pop("pce", None)  # repart d'un état propre à chaque lancement
+    reset_pce()  # repart d'un état propre (résultat + métadonnées) à chaque lancement
     try:
         gen = SEOBriefGenerator()
         gen.setup_apis(DFS_USER, DFS_PASS, "claude", model, ANTHROPIC_KEY)
@@ -219,3 +228,7 @@ if pce:
             st.markdown(f"[Voir l'article →]({res.get('link')})")
         except RuntimeError as e:
             st.error(str(e))
+
+    st.divider()
+    st.button("🔄 Refaire un article (repartir de zéro)", key="pce_reset",
+              on_click=reset_pce, kwargs={"clear_keyword": True})
